@@ -56,13 +56,13 @@ func NewModel(cfg *config.Config, app *tview.Application) *Model {
 func (m *Model) showLogin() tview.Cmd {
 	m.inner = login.NewModel(m.cfg)
 	m.buildLayout()
-	return tview.Batch(m.inner.Update(&tview.InitEvent{}), tview.SetFocus(m))
+	return tview.Batch(m.inner.Update(&tview.InitMsg{}), tview.SetFocus(m))
 }
 
 func (m *Model) showChat(token string) tview.Cmd {
 	m.inner = chat.NewModel(m.app, m.cfg, token)
 	m.buildLayout()
-	return tview.Batch(m.inner.Update(&tview.InitEvent{}), tview.SetFocus(m))
+	return tview.Batch(m.inner.Update(&tview.InitMsg{}), tview.SetFocus(m))
 }
 
 func (m *Model) buildLayout() {
@@ -80,9 +80,9 @@ func (m *Model) Draw(screen tcell.Screen) {
 	m.rootFlex.Draw(screen)
 }
 
-func (m *Model) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *tview.InitEvent:
+func (m *Model) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *tview.InitMsg:
 		var cmd tview.Cmd
 		if token := os.Getenv(tokenEnvVarKey); token != "" {
 			cmd = tokenCommand(token)
@@ -95,42 +95,42 @@ func (m *Model) Update(event tview.Event) tview.Cmd {
 			cmd,
 		)
 
-	case *loginEvent:
+	case *loginMsg:
 		return m.showLogin()
-	case *tokenEvent:
-		return m.showChat(event.token)
+	case *tokenMsg:
+		return m.showChat(msg.token)
 
-	case *token.TokenEvent:
-		return tview.Batch(m.showChat(event.Token), setToken(event.Token))
-	case *qr.TokenEvent:
-		return tview.Batch(m.showChat(event.Token), setToken(event.Token))
+	case *token.TokenMsg:
+		return tview.Batch(m.showChat(msg.Token), setToken(msg.Token))
+	case *qr.TokenMsg:
+		return tview.Batch(m.showChat(msg.Token), setToken(msg.Token))
 
-	case *chat.LogoutEvent:
+	case *chat.LogoutMsg:
 		return tview.Batch(
 			m.showLogin(),
 			deleteToken(),
 		)
 
-	case *tview.KeyEvent:
+	case *tview.KeyMsg:
 		switch {
-		case keybind.Matches(event, m.cfg.Keybinds.ToggleHelp.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.ToggleHelp.Keybind):
 			m.help.SetShowAll(!m.help.ShowAll())
 			m.updateHelpHeight()
 			return nil
-		case keybind.Matches(event, m.cfg.Keybinds.Suspend.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.Suspend.Keybind):
 			m.suspend()
 			return nil
-		case keybind.Matches(event, m.cfg.Keybinds.Quit.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.Quit.Keybind):
 			var innerCmd tview.Cmd
 			if m.inner != nil {
-				innerCmd = m.inner.Update(&chat.QuitEvent{})
+				innerCmd = m.inner.Update(&chat.QuitMsg{})
 			}
 			return tview.Batch(innerCmd, tview.Quit())
 		}
 	}
 
 	if m.inner != nil {
-		return m.inner.Update(event)
+		return m.inner.Update(msg)
 	}
 	return nil
 }

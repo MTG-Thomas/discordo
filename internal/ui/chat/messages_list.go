@@ -844,80 +844,80 @@ func (ml *messagesList) selectedMessage() (*discord.Message, error) {
 	return &ml.messages[cursor], nil
 }
 
-func (ml *messagesList) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *tview.KeyEvent:
+func (ml *messagesList) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *tview.KeyMsg:
 		switch {
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.Cancel.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Cancel.Keybind):
 			ml.clearSelection()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.SelectUp.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.SelectUp.Keybind):
 			return ml.selectUp()
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.SelectDown.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.SelectDown.Keybind):
 			ml.selectDown()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.SelectTop.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.SelectTop.Keybind):
 			ml.selectTop()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.SelectBottom.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.SelectBottom.Keybind):
 			ml.selectBottom()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.SelectReply.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.SelectReply.Keybind):
 			ml.selectReply()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.YankID.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.YankID.Keybind):
 			return ml.yankMessageID()
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.YankContent.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.YankContent.Keybind):
 			return ml.yankContent()
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.YankURL.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.YankURL.Keybind):
 			return ml.yankURL()
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.Open.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Open.Keybind):
 			ml.open()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.Reply.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Reply.Keybind):
 			ml.reply(false)
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.ReplyMention.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.ReplyMention.Keybind):
 			ml.reply(true)
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.Edit.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Edit.Keybind):
 			ml.editSelectedMessage()
 			return nil
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.Delete.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Delete.Keybind):
 			return ml.deleteSelectedMessage()
-		case keybind.Matches(event, ml.cfg.Keybinds.MessagesList.DeleteConfirm.Keybind):
+		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.DeleteConfirm.Keybind):
 			ml.confirmDelete()
 			return nil
 		}
-		return ml.Model.Update(event)
+		return ml.Model.Update(msg)
 
-	case *olderMessagesLoadedEvent:
+	case *olderMessagesLoadedMsg:
 		selectedChannel := ml.chatView.SelectedChannel()
-		if selectedChannel == nil || selectedChannel.ID != event.ChannelID {
+		if selectedChannel == nil || selectedChannel.ID != msg.ChannelID {
 			return nil
 		}
 		prevCursor := ml.Cursor()
 
 		// Defensive invalidation if Discord returns overlapping windows.
-		for _, message := range event.Older {
+		for _, message := range msg.Older {
 			delete(ml.itemByID, message.ID)
 		}
-		ml.messages = slices.Concat(event.Older, ml.messages)
+		ml.messages = slices.Concat(msg.Older, ml.messages)
 		ml.invalidateRows()
 
 		switch {
 		case prevCursor == 0:
 			// Preserve "SelectUp at top" semantics: move to the next older message.
-			ml.SetCursor(len(event.Older) - 1)
+			ml.SetCursor(len(msg.Older) - 1)
 		case prevCursor > 0:
 			// Keep selection on the same message after prepend shifts indexes.
-			ml.SetCursor(prevCursor + len(event.Older))
+			ml.SetCursor(prevCursor + len(msg.Older))
 		default:
 			ml.SetCursor(prevCursor)
 		}
 		return nil
 	}
-	return ml.Model.Update(event)
+	return ml.Model.Update(msg)
 }
 
 func (ml *messagesList) selectUp() tview.Cmd {
@@ -1001,7 +1001,7 @@ func (ml *messagesList) fetchOlderMessages() tview.Cmd {
 	channelID := selectedChannel.ID
 	before := ml.messages[0].ID
 	limit := uint(ml.cfg.MessagesLimit)
-	return func() tview.Event {
+	return func() tview.Msg {
 		messages, err := ml.chatView.state.MessagesBefore(channelID, before, limit)
 		if err != nil {
 			slog.Error("failed to fetch older messages", "err", err)
@@ -1017,7 +1017,7 @@ func (ml *messagesList) fetchOlderMessages() tview.Cmd {
 
 		older := slices.Clone(messages)
 		slices.Reverse(older)
-		return newOlderMessagesLoadedEvent(channelID, older)
+		return newOlderMessagesLoadedMsg(channelID, older)
 	}
 }
 
@@ -1028,7 +1028,7 @@ func (ml *messagesList) yankMessageID() tview.Cmd {
 		return nil
 	}
 
-	return func() tview.Event {
+	return func() tview.Msg {
 		if err := clipboard.Write(clipboard.FmtText, []byte(msg.ID.String())); err != nil {
 			slog.Error("failed to copy message id", "err", err)
 		}
@@ -1043,7 +1043,7 @@ func (ml *messagesList) yankContent() tview.Cmd {
 		return nil
 	}
 
-	return func() tview.Event {
+	return func() tview.Msg {
 		if err := clipboard.Write(clipboard.FmtText, []byte(msg.Content)); err != nil {
 			slog.Error("failed to copy message content", "err", err)
 		}
@@ -1058,7 +1058,7 @@ func (ml *messagesList) yankURL() tview.Cmd {
 		return nil
 	}
 
-	return func() tview.Event {
+	return func() tview.Msg {
 		if err := clipboard.Write(clipboard.FmtText, []byte(msg.URL())); err != nil {
 			slog.Error("failed to copy message url", "err", err)
 		}
@@ -1299,7 +1299,7 @@ func (ml *messagesList) deleteSelectedMessage() tview.Cmd {
 		return nil
 	}
 
-	return func() tview.Event {
+	return func() tview.Msg {
 		if selectedMessage.GuildID.IsValid() {
 			me, _ := ml.chatView.state.Cabinet.Me()
 			if selectedMessage.Author.ID != me.ID && !ml.chatView.state.HasPermissions(selectedMessage.ChannelID, discord.PermissionManageMessages) {

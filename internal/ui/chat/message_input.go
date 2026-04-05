@@ -103,22 +103,22 @@ func (mi *messageInput) stopTypingTimer() {
 	}
 }
 
-func (mi *messageInput) Update(event tview.Event) tview.Cmd {
+func (mi *messageInput) Update(msg tview.Msg) tview.Cmd {
 	handler := mi.TextArea.Update
-	switch event := event.(type) {
-	case *tview.KeyEvent:
+	switch msg := msg.(type) {
+	case *tview.KeyMsg:
 		switch {
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.Paste.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Paste.Keybind):
 			mi.paste()
 			return handler(tcell.NewEventKey(tcell.KeyCtrlV, "", tcell.ModNone))
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.Send.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Send.Keybind):
 			if mi.chat.GetVisible(mentionsListLayerName) {
 				mi.tabComplete()
 			} else {
 				mi.send()
 			}
 			return nil
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.OpenEditor.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.OpenEditor.Keybind):
 			var cmds []tview.Cmd
 			mi.stopTabCompletion(func(next tview.Cmd) {
 				if next != nil {
@@ -127,7 +127,7 @@ func (mi *messageInput) Update(event tview.Event) tview.Cmd {
 			})
 			mi.editor()
 			return tview.Batch(cmds...)
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.OpenFilePicker.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.OpenFilePicker.Keybind):
 			var cmds []tview.Cmd
 			mi.stopTabCompletion(func(next tview.Cmd) {
 				if next != nil {
@@ -136,7 +136,7 @@ func (mi *messageInput) Update(event tview.Event) tview.Cmd {
 			})
 			mi.openFilePicker()
 			return tview.Batch(cmds...)
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.Cancel.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Cancel.Keybind):
 			var cmds []tview.Cmd
 			if mi.chat.GetVisible(mentionsListLayerName) {
 				mi.stopTabCompletion(func(next tview.Cmd) {
@@ -148,10 +148,10 @@ func (mi *messageInput) Update(event tview.Event) tview.Cmd {
 				mi.reset()
 			}
 			return tview.Batch(cmds...)
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.TabComplete.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.TabComplete.Keybind):
 			go mi.chat.app.QueueUpdateDraw(func() { mi.tabComplete() })
 			return nil
-		case keybind.Matches(event, mi.cfg.Keybinds.MessageInput.Undo.Keybind):
+		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Undo.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyCtrlZ, "", tcell.ModNone))
 		}
 
@@ -170,18 +170,18 @@ func (mi *messageInput) Update(event tview.Event) tview.Cmd {
 		if mi.cfg.AutocompleteLimit > 0 {
 			if mi.chat.GetVisible(mentionsListLayerName) {
 				keybinds := mi.cfg.Keybinds.MentionsList
-				if keybind.Matches(event, keybinds.Up.Keybind) ||
-					keybind.Matches(event, keybinds.Down.Keybind) ||
-					keybind.Matches(event, keybinds.Top.Keybind) ||
-					keybind.Matches(event, keybinds.Bottom.Keybind) {
-					return mi.mentionsList.Update(event)
+				if keybind.Matches(msg, keybinds.Up.Keybind) ||
+					keybind.Matches(msg, keybinds.Down.Keybind) ||
+					keybind.Matches(msg, keybinds.Top.Keybind) ||
+					keybind.Matches(msg, keybinds.Bottom.Keybind) {
+					return mi.mentionsList.Update(msg)
 				}
 			}
 
 			go mi.chat.app.QueueUpdateDraw(func() { mi.tabSuggestion() })
 		}
 	}
-	return handler(event)
+	return handler(msg)
 }
 
 func (mi *messageInput) paste() {

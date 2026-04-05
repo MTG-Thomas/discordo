@@ -108,7 +108,7 @@ func (m *Model) onMessageCreate(message *gateway.MessageCreateEvent) tview.Cmd {
 }
 
 func (m *Model) notify(message gateway.MessageCreateEvent) tview.Cmd {
-	return func() tview.Event {
+	return func() tview.Msg {
 		if err := notifications.Notify(m.state, message, m.cfg); err != nil {
 			slog.Error("failed to notify", "err", err, "channel_id", message.ChannelID, "message_id", message.ID)
 			return nil
@@ -202,8 +202,8 @@ func (m *Model) onTypingStart(event *gateway.TypingStartEvent) {
 }
 
 func (m *Model) onReadUpdate(event *read.UpdateEvent) {
-	// Use indexed node lookup to avoid walking the whole tree on every read
-	// event. This runs frequently while reading/typing across channels.
+	// Use indexed node lookup to avoid walking the whole tree on every read event.
+	// This runs frequently while reading/typing across channels.
 	if event.GuildID.IsValid() {
 		if guildNode := m.guildsTree.findNodeByReference(event.GuildID); guildNode != nil {
 			m.guildsTree.setNodeLineStyle(guildNode, m.guildsTree.guildNodeStyle(event.GuildID))

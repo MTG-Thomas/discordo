@@ -26,10 +26,10 @@ func newChannelsPicker(cfg *config.Config, chatView *Model) *channelsPicker {
 	return cp
 }
 
-func (cp *channelsPicker) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *picker.SelectedEvent:
-		channelID, ok := event.Reference.(discord.ChannelID)
+func (cp *channelsPicker) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *picker.SelectedMsg:
+		channelID, ok := msg.Reference.(discord.ChannelID)
 		if !ok || !channelID.IsValid() {
 			return nil
 		}
@@ -54,11 +54,11 @@ func (cp *channelsPicker) Update(event tview.Event) tview.Cmd {
 		}
 		cp.chatView.closePicker()
 		return selectCmd
-	case *picker.CancelEvent:
+	case *picker.CancelMsg:
 		cp.chatView.closePicker()
 		return nil
 	}
-	return cp.Model.Update(event)
+	return cp.Model.Update(msg)
 }
 
 func (cp *channelsPicker) update() {

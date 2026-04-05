@@ -11,7 +11,7 @@ import (
 )
 
 func (m *Model) openState() tview.Cmd {
-	return func() tview.Event {
+	return func() tview.Msg {
 		if err := m.state.Open(context.Background()); err != nil {
 			slog.Error("failed to open chat state", "err", err)
 			return nil
@@ -21,7 +21,7 @@ func (m *Model) openState() tview.Cmd {
 }
 
 func (m *Model) closeState() tview.Cmd {
-	return func() tview.Event {
+	return func() tview.Msg {
 		if m.state != nil {
 			if err := m.state.Close(); err != nil {
 				slog.Error("failed to close the session", "err", err)
@@ -32,54 +32,50 @@ func (m *Model) closeState() tview.Cmd {
 	}
 }
 
-type gatewayEvent struct {
+type gatewayEventMsg struct {
 	tcell.EventTime
 	gateway.Event
 }
 
 func (m *Model) listen() tview.Cmd {
-	return func() tview.Event {
-		return &gatewayEvent{Event: <-m.events}
+	return func() tview.Msg {
+		return &gatewayEventMsg{Event: <-m.events}
 	}
 }
 
-type channelLoadedEvent struct {
+type channelLoadedMsg struct {
 	tcell.EventTime
 	Channel  discord.Channel
 	Messages []discord.Message
 }
 
-func newChannelLoadedEvent(channel discord.Channel, messages []discord.Message) *channelLoadedEvent {
-	return &channelLoadedEvent{Channel: channel, Messages: messages}
-}
-
-type olderMessagesLoadedEvent struct {
+type olderMessagesLoadedMsg struct {
 	tcell.EventTime
 	ChannelID discord.ChannelID
 	Older     []discord.Message
 }
 
-func newOlderMessagesLoadedEvent(channelID discord.ChannelID, older []discord.Message) *olderMessagesLoadedEvent {
-	return &olderMessagesLoadedEvent{ChannelID: channelID, Older: older}
+func newOlderMessagesLoadedMsg(channelID discord.ChannelID, older []discord.Message) *olderMessagesLoadedMsg {
+	return &olderMessagesLoadedMsg{ChannelID: channelID, Older: older}
 }
 
-type LogoutEvent struct{ tcell.EventTime }
+type LogoutMsg struct{ tcell.EventTime }
 
 func (m *Model) logout() tview.Cmd {
-	return func() tview.Event {
-		return &LogoutEvent{}
+	return func() tview.Msg {
+		return &LogoutMsg{}
 	}
 }
 
-type QuitEvent struct{ tcell.EventTime }
+type QuitMsg struct{ tcell.EventTime }
 
-type closeLayerEvent struct {
+type closeLayerMsg struct {
 	tcell.EventTime
 	name string
 }
 
 func closeLayer(name string) tview.Cmd {
-	return func() tview.Event {
-		return &closeLayerEvent{name: name}
+	return func() tview.Msg {
+		return &closeLayerMsg{name: name}
 	}
 }

@@ -245,59 +245,59 @@ func (m *Model) focusNext() tview.Cmd {
 	return nil
 }
 
-func (m *Model) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *tview.InitEvent:
+func (m *Model) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *tview.InitMsg:
 		return tview.Batch(m.openState(), m.listen())
-	case *gatewayEvent:
-		switch event := event.Event.(type) {
+	case *gatewayEventMsg:
+		switch eventMsg := msg.Event.(type) {
 		case *ws.RawEvent:
-			m.onRaw(event)
+			m.onRaw(eventMsg)
 
 		case *gateway.ReadyEvent:
-			return tview.Batch(m.onReady(event), m.listen())
+			return tview.Batch(m.onReady(eventMsg), m.listen())
 
 		case *gateway.MessageCreateEvent:
-			return tview.Batch(m.onMessageCreate(event), m.listen())
+			return tview.Batch(m.onMessageCreate(eventMsg), m.listen())
 		case *gateway.MessageUpdateEvent:
-			m.onMessageUpdate(event)
+			m.onMessageUpdate(eventMsg)
 		case *gateway.MessageDeleteEvent:
-			m.onMessageDelete(event)
+			m.onMessageDelete(eventMsg)
 
 		case *gateway.GuildMembersChunkEvent:
-			m.onGuildMembersChunk(event)
+			m.onGuildMembersChunk(eventMsg)
 		case *gateway.GuildMemberRemoveEvent:
-			m.onGuildMemberRemove(event)
+			m.onGuildMemberRemove(eventMsg)
 
 		case *gateway.TypingStartEvent:
 			if m.cfg.TypingIndicator.Receive {
-				m.onTypingStart(event)
+				m.onTypingStart(eventMsg)
 			}
 
 		case *read.UpdateEvent:
-			m.onReadUpdate(event)
+			m.onReadUpdate(eventMsg)
 		}
 		return m.listen()
-	case *channelLoadedEvent:
+	case *channelLoadedMsg:
 		node := m.guildsTree.GetCurrentNode()
 		if node == nil {
 			return nil
 		}
 		channelID, ok := node.GetReference().(discord.ChannelID)
-		if !ok || channelID != event.Channel.ID {
+		if !ok || channelID != msg.Channel.ID {
 			return nil
 		}
 
-		m.SetSelectedChannel(&event.Channel)
+		m.SetSelectedChannel(&msg.Channel)
 		m.clearTypers()
 		m.messageInput.stopTypingTimer()
 
 		m.messagesList.reset()
-		m.messagesList.setTitle(event.Channel)
-		m.messagesList.setMessages(event.Messages)
+		m.messagesList.setTitle(msg.Channel)
+		m.messagesList.setMessages(msg.Messages)
 		m.messagesList.ScrollBottom()
 
-		hasNoPerm := event.Channel.Type != discord.DirectMessage && event.Channel.Type != discord.GroupDM && !m.state.HasPermissions(event.Channel.ID, discord.PermissionSendMessages)
+		hasNoPerm := msg.Channel.Type != discord.DirectMessage && msg.Channel.Type != discord.GroupDM && !m.state.HasPermissions(msg.Channel.ID, discord.PermissionSendMessages)
 		m.messageInput.SetDisabled(hasNoPerm)
 		text := "Message..."
 
@@ -309,12 +309,12 @@ func (m *Model) Update(event tview.Event) tview.Cmd {
 		}
 		m.messageInput.SetPlaceholder(tview.NewLine(tview.NewSegment(text, tcell.StyleDefault.Dim(true))))
 		return focusCmd
-	case *QuitEvent:
+	case *QuitMsg:
 		return tview.Batch(
 			m.closeState(),
 			tview.Quit(),
 		)
-	case *tview.ModalDoneEvent:
+	case *tview.ModalDoneMsg:
 		if m.HasLayer(confirmModalLayerName) {
 			m.RemoveLayer(confirmModalLayerName)
 			var focusCmd tview.Cmd
@@ -325,42 +325,42 @@ func (m *Model) Update(event tview.Event) tview.Cmd {
 			m.confirmModalDone = nil
 			m.confirmModalPreviousFocus = nil
 			if onDone != nil {
-				onDone(event.ButtonLabel)
+				onDone(msg.ButtonLabel)
 			}
 			return focusCmd
 		}
-	case *tview.KeyEvent:
+	case *tview.KeyMsg:
 		switch {
-		case keybind.Matches(event, m.cfg.Keybinds.FocusGuildsTree.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.FocusGuildsTree.Keybind):
 			m.messageInput.removeMentionsList()
 			return m.focusGuildsTree()
-		case keybind.Matches(event, m.cfg.Keybinds.FocusMessagesList.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.FocusMessagesList.Keybind):
 			m.messageInput.removeMentionsList()
 			return m.focusMessagesList()
-		case keybind.Matches(event, m.cfg.Keybinds.FocusMessageInput.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.FocusMessageInput.Keybind):
 			return m.focusMessageInput()
 
-		case keybind.Matches(event, m.cfg.Keybinds.FocusPrevious.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.FocusPrevious.Keybind):
 			return m.focusPrevious()
-		case keybind.Matches(event, m.cfg.Keybinds.FocusNext.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.FocusNext.Keybind):
 			return m.focusNext()
 
-		case keybind.Matches(event, m.cfg.Keybinds.ToggleGuildsTree.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.ToggleGuildsTree.Keybind):
 			return m.toggleGuildsTree()
-		case keybind.Matches(event, m.cfg.Keybinds.ToggleChannelsPicker.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.ToggleChannelsPicker.Keybind):
 			m.togglePicker()
 			return nil
 
-		case keybind.Matches(event, m.cfg.Keybinds.Logout.Keybind):
+		case keybind.Matches(msg, m.cfg.Keybinds.Logout.Keybind):
 			return tview.Batch(m.closeState(), m.logout())
 		}
-	case *closeLayerEvent:
-		if m.HasLayer(event.name) {
-			m.HideLayer(event.name)
+	case *closeLayerMsg:
+		if m.HasLayer(msg.name) {
+			m.HideLayer(msg.name)
 		}
 		return nil
 	}
-	return m.Layers.Update(event)
+	return m.Layers.Update(msg)
 }
 
 func (m *Model) showConfirmModal(prompt string, buttons []string, onDone func(label string)) {

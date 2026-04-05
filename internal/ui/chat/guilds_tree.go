@@ -373,7 +373,7 @@ func (gt *guildsTree) onSelected(node *tview.TreeNode) tview.Cmd {
 
 func (gt *guildsTree) loadChannel(channel discord.Channel) tview.Cmd {
 	limit := uint(gt.cfg.MessagesLimit)
-	return func() tview.Event {
+	return func() tview.Msg {
 		messages, err := gt.chat.state.Messages(channel.ID, limit)
 		if err != nil {
 			slog.Error("failed to get messages", "err", err, "channel_id", channel.ID, "limit", limit)
@@ -385,8 +385,7 @@ func (gt *guildsTree) loadChannel(channel discord.Channel) tview.Cmd {
 		if guildID := channel.GuildID; guildID.IsValid() {
 			gt.chat.messagesList.requestGuildMembers(guildID, messages)
 		}
-
-		return newChannelLoadedEvent(channel, messages)
+		return &channelLoadedMsg{Channel: channel, Messages: messages}
 	}
 }
 
@@ -404,38 +403,37 @@ func (gt *guildsTree) collapseParentNode(node *tview.TreeNode) {
 		})
 }
 
-func (gt *guildsTree) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *tview.TreeViewSelectedEvent:
-		return gt.onSelected(event.Node)
-	case *tview.KeyEvent:
+func (gt *guildsTree) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *tview.TreeViewSelectedMsg:
+		return gt.onSelected(msg.Node)
+	case *tview.KeyMsg:
 		handler := gt.TreeView.Update
-
 		switch {
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.CollapseParentNode.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.CollapseParentNode.Keybind):
 			gt.collapseParentNode(gt.GetCurrentNode())
 			return nil
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.MoveToParentNode.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.MoveToParentNode.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyRune, "K", tcell.ModNone))
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.Up.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Up.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyUp, "", tcell.ModNone))
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.Down.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Down.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyDown, "", tcell.ModNone))
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.Top.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Top.Keybind):
 			gt.Move(gt.GetRowCount() * -1)
 			return nil
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.Bottom.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Bottom.Keybind):
 			gt.Move(gt.GetRowCount())
 			return nil
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.SelectCurrent.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.SelectCurrent.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyEnter, "", tcell.ModNone))
-		case keybind.Matches(event, gt.cfg.Keybinds.GuildsTree.YankID.Keybind):
+		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.YankID.Keybind):
 			return gt.yankID()
 		}
 		// Do not fall through to TreeView defaults for unmatched keys.
 		return nil
 	}
-	return gt.TreeView.Update(event)
+	return gt.TreeView.Update(msg)
 }
 
 func (gt *guildsTree) yankID() tview.Cmd {
@@ -447,7 +445,7 @@ func (gt *guildsTree) yankID() tview.Cmd {
 	// Reference of a tree node in the guilds tree is its ID.
 	// discord.Snowflake (discord.GuildID and discord.ChannelID) have the String method.
 	if id, ok := node.GetReference().(fmt.Stringer); ok {
-		return func() tview.Event {
+		return func() tview.Msg {
 			if err := clipboard.Write(clipboard.FmtText, []byte(id.String())); err != nil {
 				slog.Error("failed to copy node id", "err", err)
 			}

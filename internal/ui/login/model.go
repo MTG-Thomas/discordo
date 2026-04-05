@@ -41,25 +41,25 @@ func NewModel(cfg *config.Config) *Model {
 	}
 }
 
-func (m *Model) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *errEvent:
+func (m *Model) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *errMsg:
 		if m.HasLayer(errorLayerName) {
 			return nil
 		}
-		return m.showErrorDialog(event.err)
-	case *tview.ModalDoneEvent:
+		return m.showErrorDialog(msg.err)
+	case *tview.ModalDoneMsg:
 		if !m.HasLayer(errorLayerName) {
 			return nil
 		}
-		if event.ButtonIndex == 0 {
+		if msg.ButtonIndex == 0 {
 			return setClipboard(m.errorModalText)
 		}
 		m.RemoveLayer(errorLayerName)
 		m.errorModalText = ""
 		return nil
 	}
-	return m.Layers.Update(event)
+	return m.Layers.Update(msg)
 }
 
 func (m *Model) showErrorDialog(err error) tview.Cmd {

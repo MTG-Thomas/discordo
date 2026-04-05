@@ -51,10 +51,10 @@ func (ap *attachmentsPicker) close() tview.Cmd {
 	return tview.SetFocus(ap.chatView.messagesList)
 }
 
-func (ap *attachmentsPicker) Update(event tview.Event) tview.Cmd {
-	switch event := event.(type) {
-	case *picker.SelectedEvent:
-		index, ok := event.Reference.(int)
+func (ap *attachmentsPicker) Update(msg tview.Msg) tview.Cmd {
+	switch msg := msg.(type) {
+	case *picker.SelectedMsg:
+		index, ok := msg.Reference.(int)
 		if !ok {
 			return nil
 		}
@@ -63,11 +63,11 @@ func (ap *attachmentsPicker) Update(event tview.Event) tview.Cmd {
 		}
 		ap.items[index].open()
 		return ap.close()
-	case *picker.CancelEvent:
+	case *picker.CancelMsg:
 		return ap.close()
 	}
 
-	return ap.Model.Update(event)
+	return ap.Model.Update(msg)
 }
 
 func (ap *attachmentsPicker) ShortHelp() []keybind.Keybind {

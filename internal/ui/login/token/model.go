@@ -22,14 +22,14 @@ func (m *Model) Label() string {
 	return "Token"
 }
 
-func (m *Model) Update(event tview.Event) tview.Cmd {
-	switch event.(type) {
-	case *tview.FormSubmitEvent:
+func (m *Model) Update(msg tview.Msg) tview.Cmd {
+	switch msg.(type) {
+	case *tview.FormSubmitMsg:
 		token := m.GetFormItem(0).(*tview.InputField).GetText()
 		if token == "" {
 			return nil
 		}
 		return tokenCommand(token)
 	}
-	return m.Form.Update(event)
+	return m.Form.Update(msg)
 }
