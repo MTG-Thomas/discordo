@@ -354,11 +354,6 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 		case keybind.Matches(msg, m.cfg.Keybinds.Logout.Keybind):
 			return tview.Batch(m.closeState(), m.logout())
 		}
-	case *closeLayerMsg:
-		if m.HasLayer(msg.name) {
-			m.HideLayer(msg.name)
-		}
-		return nil
 	case *tabSuggestMsg:
 		// Member search completes in a command goroutine; resume suggestion
 		// generation on the update loop to keep UI mutations serialized.

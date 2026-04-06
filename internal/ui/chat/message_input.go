@@ -123,35 +123,20 @@ func (mi *messageInput) Update(msg tview.Msg) tview.Cmd {
 			}
 			return nil
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.OpenEditor.Keybind):
-			var cmds []tview.Cmd
-			mi.stopTabCompletion(func(next tview.Cmd) {
-				if next != nil {
-					cmds = append(cmds, next)
-				}
-			})
+			cmd := mi.stopTabCompletion()
 			mi.editor()
-			return tview.Batch(cmds...)
+			return cmd
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.OpenFilePicker.Keybind):
-			var cmds []tview.Cmd
-			mi.stopTabCompletion(func(next tview.Cmd) {
-				if next != nil {
-					cmds = append(cmds, next)
-				}
-			})
+			cmd := mi.stopTabCompletion()
 			mi.openFilePicker()
-			return tview.Batch(cmds...)
+			return cmd
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Cancel.Keybind):
-			var cmds []tview.Cmd
 			if mi.chat.GetVisible(mentionsListLayerName) {
-				mi.stopTabCompletion(func(next tview.Cmd) {
-					if next != nil {
-						cmds = append(cmds, next)
-					}
-				})
+				return mi.stopTabCompletion()
 			} else {
 				mi.reset()
 			}
-			return tview.Batch(cmds...)
+			return nil
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.TabComplete.Keybind):
 			return mi.tabComplete()
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Undo.Keybind):
@@ -328,8 +313,7 @@ func (mi *messageInput) tabComplete() tview.Cmd {
 		return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' || r == '.'
 	})
 	if r != '@' {
-		mi.stopTabCompletion(nil)
-		return nil
+		return mi.stopTabCompletion()
 	}
 	pos := posEnd - (len(name) + 1)
 
@@ -373,8 +357,7 @@ func (mi *messageInput) tabComplete() tview.Cmd {
 		return nil
 	}
 	mi.Replace(pos, posEnd, "@"+name+" ")
-	mi.stopTabCompletion(nil)
-	return nil
+	return mi.stopTabCompletion()
 }
 
 func (mi *messageInput) tabSuggest() tview.Cmd {
@@ -382,8 +365,7 @@ func (mi *messageInput) tabSuggest() tview.Cmd {
 		return unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' || r == '.'
 	})
 	if r != '@' {
-		mi.stopTabCompletion(nil)
-		return nil
+		return mi.stopTabCompletion()
 	}
 	selected := mi.chat.SelectedChannel()
 	if selected == nil {
@@ -460,14 +442,12 @@ func (mi *messageInput) tabSuggest() tview.Cmd {
 			}
 		}
 		if mi.mentionsList.itemCount() == 0 {
-			mi.stopTabCompletion(nil)
-			return searchCmd
+			return tview.Batch(mi.stopTabCompletion(), searchCmd)
 		}
 	}
 
 	if mi.mentionsList.itemCount() == 0 {
-		mi.stopTabCompletion(nil)
-		return nil
+		return mi.stopTabCompletion()
 	}
 
 	mi.mentionsList.rebuild()
@@ -632,17 +612,13 @@ func (mi *messageInput) removeMentionsList() {
 	}
 }
 
-func (mi *messageInput) stopTabCompletion(emit func(tview.Cmd)) {
+func (mi *messageInput) stopTabCompletion() tview.Cmd {
 	if mi.cfg.AutocompleteLimit > 0 {
 		mi.mentionsList.clear()
-		if emit != nil {
-			emit(closeLayer(mentionsListLayerName))
-			emit(tview.SetFocus(mi))
-		} else {
-			mi.removeMentionsList()
-			mi.chat.app.SetFocus(mi)
-		}
+		mi.removeMentionsList()
+		return tview.SetFocus(mi)
 	}
+	return nil
 }
 
 func (mi *messageInput) editor() {

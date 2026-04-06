@@ -68,14 +68,3 @@ func (m *Model) logout() tview.Cmd {
 }
 
 type QuitMsg struct{ tcell.EventTime }
-
-type closeLayerMsg struct {
-	tcell.EventTime
-	name string
-}
-
-func closeLayer(name string) tview.Cmd {
-	return func() tview.Msg {
-		return &closeLayerMsg{name: name}
-	}
-}
