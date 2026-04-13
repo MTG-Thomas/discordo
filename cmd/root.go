@@ -13,20 +13,14 @@ import (
 	"github.com/gdamore/tcell/v3"
 )
 
-var (
-	configPath string
-	logPath    string
-	logLevel   string
-)
-
 func Run() error {
-	flag.StringVar(&configPath, "config-path", config.DefaultPath(), "path of the configuration file")
-	flag.StringVar(&logPath, "log-path", logger.DefaultPath(), "path of the log file")
-	flag.StringVar(&logLevel, "log-level", "info", "log level")
+	configPath := flag.String("config-path", config.DefaultPath(), "path of the configuration file")
+	logPath := flag.String("log-path", logger.DefaultPath(), "path of the log file")
+	logLevel := flag.String("log-level", "info", "log level")
 	flag.Parse()
 
 	var level slog.Level
-	switch logLevel {
+	switch *logLevel {
 	case "debug":
 		ws.EnableRawEvents = true
 		level = slog.LevelDebug
@@ -38,11 +32,11 @@ func Run() error {
 		level = slog.LevelError
 	}
 
-	if err := logger.Load(logPath, level); err != nil {
+	if err := logger.Load(*logPath, level); err != nil {
 		return fmt.Errorf("failed to load logger: %w", err)
 	}
 
-	cfg, err := config.Load(configPath)
+	cfg, err := config.Load(*configPath)
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
 	}
