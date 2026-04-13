@@ -49,7 +49,7 @@ func (ap *attachmentsPicker) close() tview.Cmd {
 
 func (ap *attachmentsPicker) Update(msg tview.Msg) tview.Cmd {
 	switch msg := msg.(type) {
-	case *picker.SelectedMsg:
+	case picker.SelectedMsg:
 		index, ok := msg.Reference.(int)
 		if !ok {
 			return nil
@@ -59,7 +59,7 @@ func (ap *attachmentsPicker) Update(msg tview.Msg) tview.Cmd {
 		}
 		ap.items[index].open()
 		return ap.close()
-	case *picker.CancelMsg:
+	case picker.CancelMsg:
 		return ap.close()
 	}
 

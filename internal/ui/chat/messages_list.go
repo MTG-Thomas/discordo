@@ -846,7 +846,7 @@ func (ml *messagesList) selectedMessage() (*discord.Message, error) {
 
 func (ml *messagesList) Update(msg tview.Msg) tview.Cmd {
 	switch msg := msg.(type) {
-	case *tview.KeyMsg:
+	case tview.KeyMsg:
 		switch {
 		case keybind.Matches(msg, ml.cfg.Keybinds.MessagesList.Cancel.Keybind):
 			ml.clearSelection()
@@ -887,7 +887,7 @@ func (ml *messagesList) Update(msg tview.Msg) tview.Cmd {
 		}
 		return ml.Model.Update(msg)
 
-	case *olderMessagesLoadedMsg:
+	case olderMessagesLoadedMsg:
 		selectedChannel := ml.chat.SelectedChannel()
 		if selectedChannel == nil || selectedChannel.ID != msg.ChannelID {
 			return nil

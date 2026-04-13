@@ -54,7 +54,7 @@ type messageInput struct {
 	typingTimer   *time.Timer
 }
 
-type tabSuggestMsg struct{ tcell.EventTime }
+type tabSuggestMsg struct{}
 
 var _ help.KeyMap = (*messageInput)(nil)
 
@@ -108,9 +108,9 @@ func (mi *messageInput) stopTypingTimer() {
 func (mi *messageInput) Update(msg tview.Msg) tview.Cmd {
 	handler := mi.TextArea.Update
 	switch msg := msg.(type) {
-	case *tabSuggestMsg:
+	case tabSuggestMsg:
 		return mi.tabSuggest()
-	case *tview.KeyMsg:
+	case tview.KeyMsg:
 		switch {
 		case keybind.Matches(msg, mi.cfg.Keybinds.MessageInput.Paste.Keybind):
 			mi.paste()
@@ -512,7 +512,7 @@ func (mi *messageInput) searchMember(gID discord.GuildID, name string) tview.Cmd
 		mi.chat.messagesList.setFetchingChunk(true, 0)
 		mi.chat.state.MemberState.SearchMember(gID, name)
 		mi.cache.Create(key, mi.chat.messagesList.waitForChunkEvent())
-		return &tabSuggestMsg{}
+		return tabSuggestMsg{}
 	}
 }
 

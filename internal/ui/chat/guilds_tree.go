@@ -385,7 +385,7 @@ func (gt *guildsTree) loadChannel(channel discord.Channel) tview.Cmd {
 		if guildID := channel.GuildID; guildID.IsValid() {
 			gt.chat.messagesList.requestGuildMembers(guildID, messages)
 		}
-		return &channelLoadedMsg{Channel: channel, Messages: messages}
+		return channelLoadedMsg{Channel: channel, Messages: messages}
 	}
 }
 
@@ -405,9 +405,9 @@ func (gt *guildsTree) collapseParentNode(node *tview.TreeNode) {
 
 func (gt *guildsTree) Update(msg tview.Msg) tview.Cmd {
 	switch msg := msg.(type) {
-	case *tview.TreeViewSelectedMsg:
+	case tview.TreeViewSelectedMsg:
 		return gt.onSelected(msg.Node)
-	case *tview.KeyMsg:
+	case tview.KeyMsg:
 		handler := gt.TreeView.Update
 		switch {
 		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.CollapseParentNode.Keybind):
