@@ -316,7 +316,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 			m.closeState(),
 			tview.Quit(),
 		)
-	case *tview.ModalDoneMsg:
+	case tview.ModalDoneMsg:
 		if m.HasLayer(confirmModalLayerName) {
 			m.RemoveLayer(confirmModalLayerName)
 			var focusCmd tview.Cmd
