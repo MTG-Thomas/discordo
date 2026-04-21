@@ -20,12 +20,12 @@ func (m *Model) openState() tview.Cmd {
 }
 
 func (m *Model) closeState() tview.Cmd {
+	if m.state == nil {
+		return nil
+	}
 	return func() tview.Msg {
-		if m.state != nil {
-			if err := m.state.Close(); err != nil {
-				slog.Error("failed to close the session", "err", err)
-				return nil
-			}
+		if err := m.state.Close(); err != nil {
+			slog.Error("failed to close the session", "err", err)
 		}
 		return nil
 	}
