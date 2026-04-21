@@ -312,10 +312,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 		m.messageInput.SetPlaceholder(tview.NewLine(tview.NewSegment(text, tcell.StyleDefault.Dim(true))))
 		return focusCmd
 	case QuitMsg:
-		return tview.Batch(
-			m.closeState(),
-			tview.Quit(),
-		)
+		return m.closeState()
 	case tview.ModalDoneMsg:
 		if m.HasLayer(confirmModalLayerName) {
 			m.RemoveLayer(confirmModalLayerName)
@@ -354,7 +351,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 			return nil
 
 		case keybind.Matches(msg, m.cfg.Keybinds.Logout.Keybind):
-			return tview.Batch(m.closeState(), m.logout())
+			return tview.Sequence(m.closeState(), m.logout())
 		}
 	case tabSuggestMsg:
 		// Member search completes in a command goroutine; resume suggestion

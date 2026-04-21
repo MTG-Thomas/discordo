@@ -167,7 +167,7 @@ func (mi *messageInput) Update(msg tview.Msg) tview.Cmd {
 			}
 
 			// Apply key edits first, then recompute autocomplete through Msg/Cmd.
-			return tview.Batch(handler(msg), mi.tabSuggest())
+			return tview.Sequence(handler(msg), mi.tabSuggest())
 		}
 	}
 	return handler(msg)

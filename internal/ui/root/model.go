@@ -125,7 +125,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 			if m.inner != nil {
 				innerCmd = m.inner.Update(chat.QuitMsg{})
 			}
-			return tview.Batch(innerCmd, tview.Quit())
+			return tview.Sequence(innerCmd, tview.Quit())
 		}
 	}
 
