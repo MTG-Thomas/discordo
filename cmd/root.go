@@ -56,7 +56,6 @@ func Run() error {
 		screen.EnableMouse(tcell.MouseButtonEvents)
 	}
 	screen.EnablePaste()
-	screen.EnableFocus()
 
 	tview.Styles = tview.Theme{}
 	app := tview.NewApplication(tview.WithScreen(screen))
