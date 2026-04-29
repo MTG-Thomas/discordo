@@ -76,8 +76,8 @@ func (m *Model) buildLayout() {
 
 var _ tview.Model = (*Model)(nil)
 
-func (m *Model) Draw(screen tcell.Screen) {
-	m.rootFlex.Draw(screen)
+func (m *Model) View(screen tcell.Screen) {
+	m.rootFlex.View(screen)
 }
 
 func (m *Model) Update(msg tview.Msg) tview.Cmd {

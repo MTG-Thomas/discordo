@@ -108,7 +108,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 	return nil
 }
 
-func (m *Model) Draw(screen tcell.Screen) {
+func (m *Model) View(screen tcell.Screen) {
 	var contents []string
 	if m.qrCode != nil {
 		bitmap := m.qrCode.Bitmap()
@@ -141,7 +141,7 @@ func (m *Model) Draw(screen tcell.Screen) {
 	builder := tview.NewLineBuilder()
 	builder.Write(strings.Join(contents, "\n"), tcell.StyleDefault)
 	m.SetLines(m.centerLines(builder.Finish()))
-	m.TextView.Draw(screen)
+	m.TextView.View(screen)
 }
 
 func (m *Model) centerLines(lines []tview.Line) []tview.Line {
