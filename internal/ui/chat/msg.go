@@ -6,7 +6,6 @@ import (
 
 	"github.com/ayn2op/tview"
 	"github.com/diamondburned/arikawa/v3/discord"
-	"github.com/diamondburned/arikawa/v3/gateway"
 )
 
 func (m *Model) openState() tview.Cmd {
@@ -31,13 +30,9 @@ func (m *Model) closeState() tview.Cmd {
 	}
 }
 
-type gatewayEventMsg struct {
-	gateway.Event
-}
-
 func (m *Model) listen() tview.Cmd {
 	return func() tview.Msg {
-		return gatewayEventMsg{Event: <-m.events}
+		return <-m.events
 	}
 }
 

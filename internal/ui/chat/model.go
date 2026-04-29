@@ -250,8 +250,8 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 	switch msg := msg.(type) {
 	case tview.InitMsg:
 		return tview.Batch(m.openState(), m.listen())
-	case gatewayEventMsg:
-		switch eventMsg := msg.Event.(type) {
+	case gateway.Event:
+		switch eventMsg := msg.(type) {
 		case *ws.RawEvent:
 			m.onRaw(eventMsg)
 
