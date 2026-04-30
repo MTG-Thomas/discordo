@@ -53,7 +53,7 @@ func Run() error {
 	}
 
 	if cfg.Mouse {
-		screen.EnableMouse(tcell.MouseButtonEvents)
+		screen.EnableMouse()
 	}
 	screen.EnablePaste()
 
