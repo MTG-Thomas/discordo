@@ -72,6 +72,7 @@ type GuildsTreeKeybinds struct {
 	SelectCurrent Keybind `toml:"select_current"`
 	YankID        Keybind `toml:"yank_id"`
 
+	CollapseAll        Keybind `toml:"collapse_all"`
 	CollapseParentNode Keybind `toml:"collapse_parent_node"`
 	MoveToParentNode   Keybind `toml:"move_to_parent_node"`
 }
@@ -158,9 +159,11 @@ func defaultNavigationKeybinds() NavigationKeybinds {
 func defaultGuildsTreeKeybinds() GuildsTreeKeybinds {
 	return GuildsTreeKeybinds{
 		NavigationKeybinds: defaultNavigationKeybinds(),
-		SelectCurrent:      newKeybind("enter", "sel"),
+		SelectCurrent:      newKeybind("enter", "select"),
 		YankID:             newKeybind("i", "copy id"),
-		CollapseParentNode: newKeybind("-", "collapse"),
+
+		CollapseAll:        newKeybind("_", "collapse all"),
+		CollapseParentNode: newKeybind("-", "collapse parent"),
 		MoveToParentNode:   newKeybind("p", "parent"),
 	}
 }
