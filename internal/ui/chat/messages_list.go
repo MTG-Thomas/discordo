@@ -1202,10 +1202,16 @@ func (ml *messagesList) openAttachment(attachment discord.Attachment) {
 		return
 	}
 
-	path = filepath.Join(path, attachment.Filename)
-	file, err := os.Create(path)
+	root, err := os.OpenRoot(path)
 	if err != nil {
-		slog.Error("failed to create attachment file", "err", err, "path", path)
+		slog.Error("failed to open attachments dir", "err", err, "path", path)
+		return
+	}
+	defer root.Close()
+
+	file, err := root.Create(attachment.Filename)
+	if err != nil {
+		slog.Error("failed to create attachment file", "err", err, "filename", attachment.Filename)
 		return
 	}
 	defer file.Close()
@@ -1215,8 +1221,8 @@ func (ml *messagesList) openAttachment(attachment discord.Attachment) {
 		return
 	}
 
-	if err := open.Start(path); err != nil {
-		slog.Error("failed to open attachment file", "err", err, "path", path)
+	if err := open.Start(file.Name()); err != nil {
+		slog.Error("failed to open attachment file", "err", err, "path", file.Name())
 		return
 	}
 }
