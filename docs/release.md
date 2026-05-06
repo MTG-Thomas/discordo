@@ -5,7 +5,7 @@ This fork publishes GPL-3.0 binaries from `MTG-Thomas/discordo` while keeping th
 ## Policy
 
 - Release from `main` only.
-- Use fork release tags such as `v0.1.0-mtg.3`.
+- Use fork release tags such as `mtg-v2026.05.06.1`.
 - Do not tag a pull request branch for release.
 - Keep `LICENSE` and upstream notices intact.
 - Release assets must be named `discordo-mtg_*`.
@@ -32,8 +32,8 @@ This fork publishes GPL-3.0 binaries from `MTG-Thomas/discordo` while keeping th
 Create and push an annotated tag from `main`:
 
 ```sh
-git tag -a v0.1.0-mtg.3 -m "MTG fork release v0.1.0-mtg.3"
-git push origin v0.1.0-mtg.3
+git tag -a mtg-v2026.05.06.1 -m "MTG fork release mtg-v2026.05.06.1"
+git push origin mtg-v2026.05.06.1
 ```
 
 The release workflow verifies the tag commit is reachable from `main`, creates or updates the GitHub release, builds platform archives, uploads checksums, and creates artifact attestations.
@@ -43,7 +43,7 @@ The release workflow verifies the tag commit is reachable from `main`, creates o
 Check the release page:
 
 ```sh
-gh release view v0.1.0-mtg.3 --repo MTG-Thomas/discordo
+gh release view mtg-v2026.05.06.1 --repo MTG-Thomas/discordo
 ```
 
 Expected assets:
