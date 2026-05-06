@@ -11,6 +11,8 @@
 
 - [ ] `go test ./...`
 - [ ] `go build -trimpath -ldflags=-s .`
+- [ ] `golangci-lint run --disable=errcheck`
+- [ ] `govulncheck ./...`
 
 ## Notes
 

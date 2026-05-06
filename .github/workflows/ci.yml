@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version-file: go.mod
 
       - name: Install libx11-dev for clipboard support
         if: runner.os == 'Linux'
