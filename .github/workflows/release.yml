@@ -122,6 +122,7 @@ jobs:
         with:
           subject-path: |
             dist/discordo_${{ matrix.name }}.*
+            dist/discordo_${{ matrix.name }}_checksums.txt
 
       - name: Upload release assets
         env:
@@ -129,4 +130,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gh release upload "${GITHUB_REF_NAME}" dist/discordo_${{ matrix.name }}.* --clobber
+          gh release upload "${GITHUB_REF_NAME}" \
+            dist/discordo_${{ matrix.name }}.* \
+            dist/discordo_${{ matrix.name }}_checksums.txt \
+            --clobber
