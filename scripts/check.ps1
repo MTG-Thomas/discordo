@@ -8,3 +8,4 @@ if ($changed) {
 
 go test ./...
 go build -trimpath -ldflags=-s .
+pwsh "$PSScriptRoot/smoke.ps1"

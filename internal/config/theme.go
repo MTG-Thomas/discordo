@@ -256,17 +256,19 @@ type (
 		GlyphSet   GlyphSetWrapper            `toml:"glyph_set"`
 		TrackStyle StyleWrapper               `toml:"track_style"`
 		ThumbStyle StyleWrapper               `toml:"thumb_style"`
+		ScrollStep int                        `toml:"scroll_step"`
 	}
 
 	Theme struct {
-		Title        TitleTheme        `toml:"title"`
-		Footer       FooterTheme       `toml:"footer"`
-		Border       BorderTheme       `toml:"border"`
-		GuildsTree   GuildsTreeTheme   `toml:"guilds_tree"`
-		ScrollBar    ScrollBarTheme    `toml:"scroll_bar"`
-		MessagesList MessagesListTheme `toml:"messages_list"`
-		MentionsList MentionsListTheme `toml:"mentions_list"`
-		Dialog       DialogTheme       `toml:"dialog"`
-		Help         HelpTheme         `toml:"help"`
+		BackgroundStyle StyleWrapper      `toml:"background_style"`
+		Title           TitleTheme        `toml:"title"`
+		Footer          FooterTheme       `toml:"footer"`
+		Border          BorderTheme       `toml:"border"`
+		GuildsTree      GuildsTreeTheme   `toml:"guilds_tree"`
+		ScrollBar       ScrollBarTheme    `toml:"scroll_bar"`
+		MessagesList    MessagesListTheme `toml:"messages_list"`
+		MentionsList    MentionsListTheme `toml:"mentions_list"`
+		Dialog          DialogTheme       `toml:"dialog"`
+		Help            HelpTheme         `toml:"help"`
 	}
 )

@@ -75,8 +75,24 @@ func RunWithArgs(args []string, stdout io.Writer) error {
 	}
 	screen.EnablePaste()
 
-	tview.Styles = tview.Theme{}
+	applyTViewTheme()
 	app := tview.NewApplication(tview.WithScreen(screen))
 	app.SetRoot(root.NewModel(cfg, app))
 	return app.Run()
+}
+
+func applyTViewTheme() {
+	tview.Styles = tview.Theme{
+		PrimitiveBackgroundColor:    tcell.GetColor("#0f1117"),
+		ContrastBackgroundColor:     tcell.GetColor("#151820"),
+		MoreContrastBackgroundColor: tcell.GetColor("#253044"),
+		BorderColor:                 tcell.GetColor("#5f6470"),
+		TitleColor:                  tcell.GetColor("#f2efe7"),
+		GraphicsColor:               tcell.GetColor("#7aa2f7"),
+		PrimaryTextColor:            tcell.GetColor("#d6d3ca"),
+		SecondaryTextColor:          tcell.GetColor("#b7b2a8"),
+		TertiaryTextColor:           tcell.GetColor("#8c8a84"),
+		InverseTextColor:            tcell.GetColor("#0f1117"),
+		ContrastSecondaryTextColor:  tcell.GetColor("#8c8a84"),
+	}
 }

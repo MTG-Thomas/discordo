@@ -203,14 +203,36 @@ func (m *Model) focusMessagesList() tview.Cmd {
 	return tview.SetFocus(m.messagesList)
 }
 
+type focusedPane uint8
+
+const (
+	focusedPaneNone focusedPane = iota
+	focusedPaneGuildsTree
+	focusedPaneMessagesList
+	focusedPaneMessageInput
+)
+
+func (m *Model) focusedPane() focusedPane {
+	switch {
+	case m.guildsTree != nil && m.guildsTree.HasFocus():
+		return focusedPaneGuildsTree
+	case m.messagesList != nil && m.messagesList.HasFocus():
+		return focusedPaneMessagesList
+	case m.messageInput != nil && m.messageInput.HasFocus():
+		return focusedPaneMessageInput
+	default:
+		return focusedPaneNone
+	}
+}
+
 func (m *Model) focusPrevious() tview.Cmd {
-	switch m.app.Focused() {
-	case m.guildsTree:
+	switch m.focusedPane() {
+	case focusedPaneGuildsTree:
 		if cmd := m.focusMessageInput(); cmd != nil {
 			return cmd
 		}
 		return m.focusMessagesList()
-	case m.messagesList:
+	case focusedPaneMessagesList:
 		// Fallback when guilds/input are unavailable.
 		if cmd := m.focusGuildsTree(); cmd != nil {
 			return cmd
@@ -219,17 +241,17 @@ func (m *Model) focusPrevious() tview.Cmd {
 			return cmd
 		}
 		return m.focusMessagesList()
-	case m.messageInput:
+	case focusedPaneMessageInput:
 		return m.focusMessagesList()
 	}
 	return nil
 }
 
 func (m *Model) focusNext() tview.Cmd {
-	switch m.app.Focused() {
-	case m.guildsTree:
+	switch m.focusedPane() {
+	case focusedPaneGuildsTree:
 		return m.focusMessagesList()
-	case m.messagesList:
+	case focusedPaneMessagesList:
 		// Fallback when input/guilds are unavailable.
 		if cmd := m.focusMessageInput(); cmd != nil {
 			return cmd
@@ -237,7 +259,7 @@ func (m *Model) focusNext() tview.Cmd {
 		if cmd := m.focusGuildsTree(); cmd != nil {
 			return cmd
 		}
-	case m.messageInput:
+	case focusedPaneMessageInput:
 		if cmd := m.focusGuildsTree(); cmd != nil {
 			return cmd
 		}

@@ -3,6 +3,7 @@ on:
   push:
     tags:
       - "v*"
+      - "mtg-v*"
 
 permissions:
   contents: write
@@ -15,15 +16,30 @@ jobs:
     name: create release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Verify release tag is on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.event.repository.default_branch }}"
+          tag_commit="$(git rev-list -n 1 "${GITHUB_REF_NAME}")"
+          if ! git merge-base --is-ancestor "$tag_commit" "origin/${{ github.event.repository.default_branch }}"; then
+            echo "::error::Release tags must point to commits reachable from ${{ github.event.repository.default_branch }}."
+            exit 1
+          fi
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 || \
+          gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1 || \
             gh release create "${GITHUB_REF_NAME}" \
               --repo "${GITHUB_REPOSITORY}" \
-              --title "${GITHUB_REF_NAME}" \
-              --notes "MTG fork release ${GITHUB_REF_NAME}."
+              --title "discordo MTG fork ${GITHUB_REF_NAME}" \
+              --notes "MTG fork release ${GITHUB_REF_NAME} of ayn2op/discordo. The matching GPL-3.0 source is this repository tag."
 
   release:
     needs: create-release
@@ -79,6 +95,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           VERSION: ${{ github.ref_name }}
+          DIST: mtg-fork
           COMMIT: ${{ github.sha }}
         run: |
           set -euo pipefail
@@ -89,7 +106,7 @@ jobs:
             out="${out}.exe"
           fi
           go build -trimpath \
-            -ldflags="-s -X github.com/ayn2op/discordo/internal/version.Version=${VERSION} -X github.com/ayn2op/discordo/internal/version.Commit=${COMMIT} -X github.com/ayn2op/discordo/internal/version.Date=${DATE}" \
+            -ldflags="-s -X github.com/ayn2op/discordo/internal/version.Version=${VERSION} -X github.com/ayn2op/discordo/internal/version.Commit=${COMMIT} -X github.com/ayn2op/discordo/internal/version.Date=${DATE} -X github.com/ayn2op/discordo/internal/version.Distribution=${DIST}" \
             -o "$out" .
 
       - name: Archive
@@ -101,9 +118,9 @@ jobs:
           set -euo pipefail
           cd dist
           if [ "$ARCHIVE" = "zip" ]; then
-            7z a "discordo_${NAME}.zip" discordo.exe
+            7z a "discordo-mtg_${NAME}.zip" discordo.exe
           else
-            tar -czf "discordo_${NAME}.tar.gz" discordo
+            tar -czf "discordo-mtg_${NAME}.tar.gz" discordo
           fi
 
       - name: Generate checksum
@@ -112,17 +129,17 @@ jobs:
           set -euo pipefail
           cd dist
           if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum discordo_* > discordo_${{ matrix.name }}_checksums.txt
+            sha256sum discordo-mtg_* > discordo-mtg_${{ matrix.name }}_checksums.txt
           else
-            shasum -a 256 discordo_* > discordo_${{ matrix.name }}_checksums.txt
+            shasum -a 256 discordo-mtg_* > discordo-mtg_${{ matrix.name }}_checksums.txt
           fi
 
       - name: Attest artifacts
         uses: actions/attest@v4
         with:
           subject-path: |
-            dist/discordo_${{ matrix.name }}.*
-            dist/discordo_${{ matrix.name }}_checksums.txt
+            dist/discordo-mtg_${{ matrix.name }}.*
+            dist/discordo-mtg_${{ matrix.name }}_checksums.txt
 
       - name: Upload release assets
         env:
@@ -131,6 +148,6 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "${GITHUB_REF_NAME}" \
-            dist/discordo_${{ matrix.name }}.* \
-            dist/discordo_${{ matrix.name }}_checksums.txt \
+            dist/discordo-mtg_${{ matrix.name }}.* \
+            dist/discordo-mtg_${{ matrix.name }}_checksums.txt \
             --clobber

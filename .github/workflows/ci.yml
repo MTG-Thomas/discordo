@@ -5,7 +5,8 @@ permissions:
   contents: read
 
 env:
-  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('0.0.0-{0}', github.ref_name) }}
+  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('0.0.0-mtg-{0}', github.ref_name) }}
+  DIST: mtg-fork
   COMMIT: ${{ github.sha }}
 
 jobs:
@@ -48,13 +49,13 @@ jobs:
           set -euo pipefail
           DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           go build -trimpath \
-            -ldflags="-s -X github.com/ayn2op/discordo/internal/version.Version=${VERSION} -X github.com/ayn2op/discordo/internal/version.Commit=${COMMIT} -X github.com/ayn2op/discordo/internal/version.Date=${DATE}" \
+            -ldflags="-s -X github.com/ayn2op/discordo/internal/version.Version=${VERSION} -X github.com/ayn2op/discordo/internal/version.Commit=${COMMIT} -X github.com/ayn2op/discordo/internal/version.Date=${DATE} -X github.com/ayn2op/discordo/internal/version.Distribution=${DIST}" \
             .
 
       - uses: actions/upload-artifact@v7
         if: ${{ github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         with:
-          name: discordo_${{ runner.os }}_${{ runner.arch }}
+          name: discordo-mtg_${{ runner.os }}_${{ runner.arch }}
           path: |
             discordo
             discordo.exe

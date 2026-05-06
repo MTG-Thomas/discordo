@@ -28,7 +28,8 @@ func ConfigurePicker(model *picker.Model, cfg *config.Config, title string) {
 	model.SetScrollBar(tview.NewScrollBar().
 		SetTrackStyle(cfg.Theme.ScrollBar.TrackStyle.Style).
 		SetThumbStyle(cfg.Theme.ScrollBar.ThumbStyle.Style).
-		SetGlyphSet(cfg.Theme.ScrollBar.GlyphSet.GlyphSet))
+		SetGlyphSet(cfg.Theme.ScrollBar.GlyphSet.GlyphSet).
+		SetScrollStep(cfg.Theme.ScrollBar.ScrollStep))
 	model.SetKeybinds(picker.Keybinds{
 		Cancel: cfg.Keybinds.Picker.Cancel.Keybind,
 		Keybinds: list.Keybinds{
