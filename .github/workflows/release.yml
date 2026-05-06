@@ -1,0 +1,132 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+  artifact-metadata: write
+
+jobs:
+  create-release:
+    name: create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 || \
+            gh release create "${GITHUB_REF_NAME}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "${GITHUB_REF_NAME}" \
+              --notes "MTG fork release ${GITHUB_REF_NAME}."
+
+  release:
+    needs: create-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            name: Linux_X64
+            archive: tar.gz
+          - os: ubuntu-24.04-arm
+            goos: linux
+            goarch: arm64
+            name: Linux_ARM64
+            archive: tar.gz
+          - os: windows-latest
+            goos: windows
+            goarch: amd64
+            name: Windows_X64
+            archive: zip
+          - os: windows-11-arm
+            goos: windows
+            goarch: arm64
+            name: Windows_ARM64
+            archive: zip
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            name: macOS_ARM64
+            archive: tar.gz
+          - os: macos-15-intel
+            goos: darwin
+            goarch: amd64
+            name: macOS_X64
+            archive: tar.gz
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install libx11-dev for clipboard support
+        if: runner.os == 'Linux'
+        run: sudo apt install libx11-dev
+
+      - name: Build
+        shell: bash
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ github.ref_name }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          mkdir -p dist
+          out="dist/discordo"
+          if [ "$GOOS" = "windows" ]; then
+            out="${out}.exe"
+          fi
+          go build -trimpath \
+            -ldflags="-s -X github.com/ayn2op/discordo/internal/version.Version=${VERSION} -X github.com/ayn2op/discordo/internal/version.Commit=${COMMIT} -X github.com/ayn2op/discordo/internal/version.Date=${DATE}" \
+            -o "$out" .
+
+      - name: Archive
+        shell: bash
+        env:
+          NAME: ${{ matrix.name }}
+          ARCHIVE: ${{ matrix.archive }}
+        run: |
+          set -euo pipefail
+          cd dist
+          if [ "$ARCHIVE" = "zip" ]; then
+            7z a "discordo_${NAME}.zip" discordo.exe
+          else
+            tar -czf "discordo_${NAME}.tar.gz" discordo
+          fi
+
+      - name: Generate checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum discordo_* > discordo_${{ matrix.name }}_checksums.txt
+          else
+            shasum -a 256 discordo_* > discordo_${{ matrix.name }}_checksums.txt
+          fi
+
+      - name: Attest artifacts
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/discordo_${{ matrix.name }}.*
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release upload "${GITHUB_REF_NAME}" dist/discordo_${{ matrix.name }}.* --clobber
