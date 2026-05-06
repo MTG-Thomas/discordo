@@ -30,12 +30,12 @@ func (m *Model) activeKeyMap() help.KeyMap {
 		return m.channelsPicker
 	}
 
-	switch m.app.Focused() {
-	case m.guildsTree:
+	switch m.focusedPane() {
+	case focusedPaneGuildsTree:
 		return m.guildsTree
-	case m.messagesList:
+	case focusedPaneMessagesList:
 		return m.messagesList
-	case m.messageInput:
+	case focusedPaneMessageInput:
 		return m.messageInput
 	default:
 		return nil

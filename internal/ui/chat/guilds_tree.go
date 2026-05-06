@@ -54,6 +54,7 @@ func newGuildsTree(cfg *config.Config, chat *Model) *guildsTree {
 		SetGraphics(cfg.Theme.GuildsTree.Graphics).
 		SetGraphicsColor(tcell.GetColor(cfg.Theme.GuildsTree.GraphicsColor)).
 		SetTitle("Guilds")
+	gt.GetRoot().SetSelectedTextStyle(gt.selectedNodeStyle())
 
 	return gt
 }
@@ -72,6 +73,7 @@ func (gt *guildsTree) createFolderNode(folder gateway.GuildFolder, guildsByID ma
 	}
 
 	folderNode := tview.NewTreeNode(name).SetExpanded(gt.cfg.Theme.GuildsTree.AutoExpandFolders)
+	folderNode.SetSelectedTextStyle(gt.selectedNodeStyle())
 	if folder.Color != 0 {
 		folderStyle := tcell.StyleDefault.Foreground(tcell.NewHexColor(int32(folder.Color)))
 		gt.setNodeLineStyle(folderNode, folderStyle)
@@ -139,6 +141,7 @@ func (gt *guildsTree) createGuildNode(n *tview.TreeNode, guild discord.Guild) {
 		SetExpandable(true).
 		SetExpanded(false).
 		SetIndent(gt.cfg.Sidebar.Indents.Guild)
+	guildNode.SetSelectedTextStyle(gt.selectedNodeStyle())
 	gt.setNodeLineStyle(guildNode, gt.guildNodeStyle(guild.ID))
 	n.AddChild(guildNode)
 	gt.guildNodeByID[guild.ID] = guildNode
@@ -151,6 +154,7 @@ func (gt *guildsTree) createChannelNode(node *tview.TreeNode, channel discord.Ch
 
 	indents := gt.cfg.Sidebar.Indents
 	channelNode := tview.NewTreeNode(ui.ChannelToString(channel, gt.cfg.Icons, gt.chat.state)).SetReference(channel.ID)
+	channelNode.SetSelectedTextStyle(gt.selectedNodeStyle())
 	gt.setNodeLineStyle(channelNode, gt.channelNodeStyle(channel))
 	switch channel.Type {
 	case discord.DirectMessage:
@@ -173,9 +177,24 @@ func (gt *guildsTree) createChannelNode(node *tview.TreeNode, channel discord.Ch
 func (gt *guildsTree) setNodeLineStyle(node *tview.TreeNode, style tcell.Style) {
 	line := node.GetLine()
 	for i := range line {
-		line[i].Style = style
+		line[i].Style = ui.MergeStyle(gt.nodeBaseStyle(), style)
 	}
 	node.SetLine(line)
+}
+
+func (gt *guildsTree) nodeBaseStyle() tcell.Style {
+	style := gt.cfg.Theme.BackgroundStyle.Style
+	if style.GetForeground() == tcell.ColorDefault {
+		style = style.Foreground(tcell.GetColor("#d6d3ca"))
+	}
+	if style.GetBackground() == tcell.ColorDefault {
+		style = style.Background(tcell.GetColor("#0f1117"))
+	}
+	return style
+}
+
+func (gt *guildsTree) selectedNodeStyle() tcell.Style {
+	return tcell.StyleDefault.Reverse(true)
 }
 
 func (gt *guildsTree) createChannelNodes(node *tview.TreeNode, channels []discord.Channel) {
@@ -322,6 +341,48 @@ func (gt *guildsTree) collapseParentNode(node *tview.TreeNode) {
 		})
 }
 
+func (gt *guildsTree) visibleNodes() []*tview.TreeNode {
+	root := gt.GetRoot()
+	if root == nil {
+		return nil
+	}
+
+	var nodes []*tview.TreeNode
+	var walk func(node *tview.TreeNode, level int)
+	walk = func(node *tview.TreeNode, level int) {
+		if level >= 1 {
+			nodes = append(nodes, node)
+		}
+		if !node.IsExpanded() {
+			return
+		}
+		for _, child := range node.GetChildren() {
+			walk(child, level+1)
+		}
+	}
+	walk(root, 0)
+	return nodes
+}
+
+func (gt *guildsTree) wrapMove(up bool) bool {
+	nodes := gt.visibleNodes()
+	if len(nodes) < 2 {
+		return false
+	}
+
+	current := gt.GetCurrentNode()
+	switch {
+	case up && current == nodes[0]:
+		gt.SetCurrentNode(nodes[len(nodes)-1])
+		return true
+	case !up && current == nodes[len(nodes)-1]:
+		gt.SetCurrentNode(nodes[0])
+		return true
+	default:
+		return false
+	}
+}
+
 func (gt *guildsTree) Update(msg tview.Msg) tview.Cmd {
 	switch msg := msg.(type) {
 	case tview.TreeViewSelectedMsg:
@@ -340,8 +401,14 @@ func (gt *guildsTree) Update(msg tview.Msg) tview.Cmd {
 		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.MoveToParentNode.Keybind):
 			return handler(tcell.NewEventKey(tcell.KeyRune, "K", tcell.ModNone))
 		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Up.Keybind):
+			if gt.wrapMove(true) {
+				return nil
+			}
 			return handler(tcell.NewEventKey(tcell.KeyUp, "", tcell.ModNone))
 		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Down.Keybind):
+			if gt.wrapMove(false) {
+				return nil
+			}
 			return handler(tcell.NewEventKey(tcell.KeyDown, "", tcell.ModNone))
 		case keybind.Matches(msg, gt.cfg.Keybinds.GuildsTree.Top.Keybind):
 			gt.Move(gt.GetRowCount() * -1)

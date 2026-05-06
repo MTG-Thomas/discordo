@@ -31,10 +31,11 @@ func (k *Keybind) UnmarshalTOML(value any) error {
 	return nil
 }
 
-func newKeybind(key, desc string) Keybind {
+func newKeybind(key string, desc string, aliases ...string) Keybind {
+	keys := append([]string{key}, aliases...)
 	return Keybind{
 		Keybind: keybind.NewKeybind(
-			keybind.WithKeys(key),
+			keybind.WithKeys(keys...),
 			keybind.WithHelp(key, desc),
 		),
 	}
@@ -137,8 +138,8 @@ type Keybinds struct {
 func defaultPickerKeybinds() PickerKeybinds {
 	return PickerKeybinds{
 		NavigationKeybinds: NavigationKeybinds{
-			Up:     newKeybind("ctrl+p", "up"),
-			Down:   newKeybind("ctrl+n", "down"),
+			Up:     newKeybind("up", "up", "ctrl+p"),
+			Down:   newKeybind("down", "down", "ctrl+n"),
 			Top:    newKeybind("home", "top"),
 			Bottom: newKeybind("end", "bottom"),
 		},
@@ -149,10 +150,10 @@ func defaultPickerKeybinds() PickerKeybinds {
 
 func defaultNavigationKeybinds() NavigationKeybinds {
 	return NavigationKeybinds{
-		Up:     newKeybind("k", "up"),
-		Down:   newKeybind("j", "down"),
-		Top:    newKeybind("g", "top"),
-		Bottom: newKeybind("G", "bottom"),
+		Up:     newKeybind("up", "up", "k"),
+		Down:   newKeybind("down", "down", "j"),
+		Top:    newKeybind("home", "top", "g"),
+		Bottom: newKeybind("end", "bottom", "G"),
 	}
 }
 
@@ -173,12 +174,12 @@ func defaultMessagesListKeybinds() MessagesListKeybinds {
 		SelectionKeybinds: SelectionKeybinds{
 			SelectUp:     newKeybind("k", "up"),
 			SelectDown:   newKeybind("j", "down"),
-			SelectTop:    newKeybind("g", "top"),
-			SelectBottom: newKeybind("G", "bottom"),
+			SelectTop:    newKeybind("home", "top", "g"),
+			SelectBottom: newKeybind("end", "bottom", "G"),
 		},
 		ScrollKeybinds: ScrollKeybinds{
-			ScrollUp:     newKeybind("K", "scroll up"),
-			ScrollDown:   newKeybind("J", "scroll down"),
+			ScrollUp:     newKeybind("up", "scroll up", "K"),
+			ScrollDown:   newKeybind("down", "scroll down", "J"),
 			ScrollTop:    newKeybind("home", "scroll top"),
 			ScrollBottom: newKeybind("end", "scroll bottom"),
 		},
@@ -204,7 +205,7 @@ func defaultMessageInputKeybinds() MessageInputKeybinds {
 		Paste:          newKeybind("ctrl+v", "paste"),
 		Send:           newKeybind("enter", "send"),
 		Cancel:         newKeybind("esc", "cancel"),
-		TabComplete:    newKeybind("tab", "complete"),
+		TabComplete:    newKeybind("ctrl+space", "complete"),
 		Undo:           newKeybind("ctrl+u", "undo"),
 		OpenEditor:     newKeybind("ctrl+e", "editor"),
 		OpenFilePicker: newKeybind("ctrl+\\", "attach"),
@@ -214,8 +215,8 @@ func defaultMessageInputKeybinds() MessageInputKeybinds {
 func defaultMentionsListKeybinds() MentionsListKeybinds {
 	return MentionsListKeybinds{
 		NavigationKeybinds: NavigationKeybinds{
-			Up:     newKeybind("ctrl+p", "up"),
-			Down:   newKeybind("ctrl+n", "down"),
+			Up:     newKeybind("up", "up", "ctrl+p"),
+			Down:   newKeybind("down", "down", "ctrl+n"),
 			Top:    newKeybind("home", "top"),
 			Bottom: newKeybind("end", "bottom"),
 		},
@@ -224,17 +225,17 @@ func defaultMentionsListKeybinds() MentionsListKeybinds {
 
 func defaultKeybinds() Keybinds {
 	return Keybinds{
-		ToggleGuildsTree:     newKeybind("ctrl+b", "toggle guilds"),
-		ToggleChannelsPicker: newKeybind("ctrl+k", "channels picker"),
+		ToggleGuildsTree:     newKeybind("f2", "toggle guilds", "ctrl+b"),
+		ToggleChannelsPicker: newKeybind("f3", "channels picker", "ctrl+k"),
 		ToggleHelp:           newKeybind("ctrl+.", "help"),
 		Suspend:              newKeybind("ctrl+z", "suspend"),
 
-		FocusGuildsTree:   newKeybind("ctrl+g", "guilds"),
-		FocusMessagesList: newKeybind("ctrl+t", "messages"),
-		FocusMessageInput: newKeybind("ctrl+i", "input"),
+		FocusGuildsTree:   newKeybind("f4", "guilds", "ctrl+g"),
+		FocusMessagesList: newKeybind("f5", "messages", "ctrl+t"),
+		FocusMessageInput: newKeybind("f6", "input", "ctrl+i"),
 
-		FocusPrevious: newKeybind("ctrl+h", "focus prev"),
-		FocusNext:     newKeybind("ctrl+l", "focus next"),
+		FocusPrevious: newKeybind("shift+tab", "focus prev", "ctrl+h"),
+		FocusNext:     newKeybind("tab", "focus next", "ctrl+l"),
 
 		Logout: newKeybind("ctrl+d", "logout"),
 		Quit:   newKeybind("ctrl+c", "quit"),

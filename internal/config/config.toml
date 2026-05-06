@@ -93,15 +93,15 @@ guild_store = "s-"
 # Esc: Reset message selection or close the channel selection popup.
 [keybinds]
 # Hide/show the guilds tree.
-toggle_guilds_tree = "ctrl+b"
-toggle_channels_picker = "ctrl+k"
+toggle_guilds_tree = ["f2", "ctrl+b"]
+toggle_channels_picker = ["f3", "ctrl+k"]
 toggle_help = "ctrl+."
-focus_guilds_tree = "ctrl+g"
-focus_messages_list = "ctrl+t"
-focus_message_input = "ctrl+i"
+focus_guilds_tree = ["f4", "ctrl+g"]
+focus_messages_list = ["f5", "ctrl+t"]
+focus_message_input = ["f6", "ctrl+i"]
 # Cycle focus between the widgets.
-focus_previous = "ctrl+h"
-focus_next = "ctrl+l"
+focus_previous = ["shift+tab", "ctrl+h"]
+focus_next = ["tab", "ctrl+l"]
 # Log out and remove the authentication token from keyring.
 # Requires re-login upon restart.
 logout = "ctrl+d"
@@ -110,18 +110,18 @@ quit = "ctrl+c"
 
 [keybinds.picker]
 cancel = "esc"
-up = "ctrl+p"
-down = "ctrl+n"
+up = ["up", "ctrl+p"]
+down = ["down", "ctrl+n"]
 top = "home"
 bottom = "end"
 select = "enter"
 
 # Only while focusing on the guilds tree
 [keybinds.guilds_tree]
-up = "k"
-down = "j"
-top = "g"
-bottom = "G"
+up = ["up", "k"]
+down = ["down", "j"]
+top = ["home", "g"]
+bottom = ["end", "G"]
 # Select the currently highlighted text-based channel or expand a guild or channel.
 select_current = "enter"
 yank_id = "i"
@@ -133,11 +133,11 @@ move_to_parent_node = "p"
 [keybinds.messages_list]
 select_up = "k"
 select_down = "j"
-select_top = "g"
-select_bottom = "G"
+select_top = ["home", "g"]
+select_bottom = ["end", "G"]
 # Scroll the messages list without changing the selection.
-scroll_up = "K"
-scroll_down = "J"
+scroll_up = ["up", "K"]
+scroll_down = ["down", "J"]
 scroll_top = "home"
 scroll_bottom = "end"
 # Select the message reference (reply) of the selected channel.
@@ -167,35 +167,38 @@ send = "enter"
 # Remove existing text or cancel reply.
 cancel = "esc"
 # Complete usernames when mentioning
-tab_complete = "tab"
+tab_complete = "ctrl+space"
 undo = "ctrl+u"
 
 open_editor = "ctrl+e"
 open_file_picker = "ctrl+\\"
 
 [keybinds.mentions_list]
-up = "ctrl+p"
-down = "ctrl+n"
+up = ["up", "ctrl+p"]
+down = ["down", "ctrl+n"]
 top = "home"
 bottom = "end"
 
 # style = { foreground = "", background = "", attributes = "" or ["",""],  underline = "", underline_color = "" }
+[theme]
+background_style = { foreground = "#d6d3ca", background = "#0f1117" }
+
 [theme.title]
 alignment = "left"                                           # `"left"`, `"center"`, or `"right"`.
-normal_style = { attributes = "dim" }
-active_style = { foreground = "green", attributes = "bold" }
+normal_style = { foreground = "#8c8a84" }
+active_style = { foreground = "#f2efe7", attributes = "bold" }
 
 [theme.footer]
 alignment = "left"
-normal_style = { attributes = "dim" }
-active_style = { foreground = "green", attributes = "bold" }
+normal_style = { foreground = "#8c8a84" }
+active_style = { foreground = "#f2efe7", attributes = "bold" }
 
 [theme.border]
 enabled = true
 padding = [0, 0, 1, 1] # [top, bottom, left, right]
 
-normal_style = { attributes = "dim" }
-active_style = { foreground = "green", attributes = "bold" }
+normal_style = { foreground = "#5f6470" }
+active_style = { foreground = "#7aa2f7" }
 
 # `"hidden"`, `"plain"`, `"round"`, `"thick"`, or `"double"`.
 normal_set = "round"
@@ -208,38 +211,41 @@ graphics = true
 graphics_color = "default"
 
 # Direct-message recipient presence styles.
-online_style = { foreground = "green" }
-idle_style = { foreground = "yellow" }
-dnd_style = { foreground = "red" }
-offline_style = { foreground = "gray" }
+online_style = { foreground = "#7ccf8a" }
+idle_style = { foreground = "#e0af68" }
+dnd_style = { foreground = "#f7768e" }
+offline_style = { foreground = "#8c8a84" }
 
 [theme.scroll_bar]
 visibility = "auto"
 # "minimal", "box_drawing", or "unicode"
 glyph_set = "unicode"
-track_style = { attributes = "dim" }
-thumb_style = {}
+# Number of logical lines to move per mouse wheel tick.
+scroll_step = 6
+track_style = { foreground = "#3b3f4a" }
+thumb_style = { foreground = "#7aa2f7" }
 
 [theme.messages_list]
 reply_indicator = ">"
 forwarded_indicator = "<"
 
-mention_style = { foreground = "blue", attributes = "bold" }
-emoji_style = { foreground = "green" }
-url_style = { foreground = "blue" }
-attachment_style = { foreground = "yellow" }
-message_style = {}
-selected_message_style = { attributes = "reverse" }
+author_style = { foreground = "#f2efe7", attributes = "bold" }
+mention_style = { foreground = "#7aa2f7", attributes = "bold" }
+emoji_style = { foreground = "#7ccf8a" }
+url_style = { foreground = "#7aa2f7" }
+attachment_style = { foreground = "#e0af68" }
+message_style = { foreground = "#d6d3ca", background = "#0f1117" }
+selected_message_style = { foreground = "#f2efe7", background = "#253044" }
 
 [theme.messages_list.embeds]
-provider_style = { attributes = ["dim", "italic"] }
-author_style = { attributes = "italic" }
-title_style = { foreground = "blue", attributes = "bold" }
-description_style = { attributes = "dim" }
-field_name_style = { attributes = ["bold", "underline"] }
-field_value_style = {}
-footer_style = { attributes = ["dim", "italic"] }
-url_style = { foreground = "blue", underline = "solid" }
+provider_style = { foreground = "#8c8a84", attributes = "italic" }
+author_style = { foreground = "#b7b2a8", attributes = "italic" }
+title_style = { foreground = "#7aa2f7", attributes = "bold" }
+description_style = { foreground = "#d6d3ca" }
+field_name_style = { foreground = "#f2efe7", attributes = ["bold", "underline"] }
+field_value_style = { foreground = "#d6d3ca" }
+footer_style = { foreground = "#8c8a84", attributes = "italic" }
+url_style = { foreground = "#7aa2f7", underline = "solid" }
 
 [theme.mentions_list]
 # Note: width and height are capped to the avaliable space
@@ -251,12 +257,12 @@ min_width = 20
 max_height = 0
 
 [theme.dialog]
-style = {}
+style = { foreground = "#d6d3ca", background = "#151820" }
 # Background style: everything else behind the dialog
 background_style = { attributes = "dim" }
 
 [theme.help]
-short_key_style = { attributes = "dim" }
-short_desc_style = {}
-full_key_style = { attributes = "dim" }
-full_desc_style = {}
+short_key_style = { foreground = "#7aa2f7" }
+short_desc_style = { foreground = "#d6d3ca" }
+full_key_style = { foreground = "#7aa2f7" }
+full_desc_style = { foreground = "#d6d3ca" }

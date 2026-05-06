@@ -3,11 +3,12 @@ package version
 import "fmt"
 
 var (
-	Version = "dev"
-	Commit  = "unknown"
-	Date    = "unknown"
+	Version      = "dev"
+	Commit       = "unknown"
+	Date         = "unknown"
+	Distribution = "mtg-fork"
 )
 
 func String() string {
-	return fmt.Sprintf("discordo version=%s commit=%s date=%s", Version, Commit, Date)
+	return fmt.Sprintf("discordo distribution=%s version=%s commit=%s date=%s", Distribution, Version, Commit, Date)
 }

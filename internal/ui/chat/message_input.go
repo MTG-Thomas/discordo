@@ -68,7 +68,14 @@ func newMessageInput(cfg *config.Config, chat *Model) *messageInput {
 		mentionsList:    newMentionsList(cfg),
 	}
 	mi.Box = ui.ConfigureBox(mi.Box, &cfg.Theme)
+	inputStyle := cfg.Theme.BackgroundStyle.Style
+	if inputStyle.GetBackground() == tcell.ColorDefault {
+		inputStyle = inputStyle.Background(tcell.GetColor("#0f1117"))
+	}
+	mi.SetBackgroundColor(inputStyle.GetBackground())
 	mi.
+		SetTextStyle(inputStyle).
+		SetSelectedStyle(tcell.StyleDefault.Foreground(tcell.GetColor("#f2efe7")).Background(tcell.GetColor("#253044"))).
 		SetPlaceholder(tview.NewLine(tview.NewSegment("Select a channel to start chatting", tcell.StyleDefault.Dim(true)))).
 		SetClipboard(
 			func(s string) {

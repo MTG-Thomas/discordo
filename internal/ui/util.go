@@ -14,6 +14,11 @@ import (
 
 // ConfigureBox configures the provided box according to the provided theme.
 func ConfigureBox(box *tview.Box, cfg *config.Theme) *tview.Box {
+	background := cfg.BackgroundStyle.GetBackground()
+	if background != tcell.ColorDefault {
+		box.SetBackgroundColor(background)
+	}
+
 	border := cfg.Border
 	normalBorderStyle, activeBorderStyle := border.NormalStyle.Style, border.ActiveStyle.Style
 	normalBorderSet, activeBorderSet := border.NormalSet.BorderSet, border.ActiveSet.BorderSet

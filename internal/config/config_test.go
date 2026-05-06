@@ -95,3 +95,67 @@ func TestLoad(t *testing.T) {
 		}
 	})
 }
+
+func TestDefaultKeybindAliases(t *testing.T) {
+	cfg := defaultKeybinds()
+
+	tests := []struct {
+		name string
+		got  []string
+		want []string
+	}{
+		{
+			name: "guilds tree keeps ctrl+b as toggle alias",
+			got:  cfg.ToggleGuildsTree.Keys(),
+			want: []string{"f2", "ctrl+b"},
+		},
+		{
+			name: "channels picker keeps ctrl+k as toggle alias",
+			got:  cfg.ToggleChannelsPicker.Keys(),
+			want: []string{"f3", "ctrl+k"},
+		},
+		{
+			name: "guilds tree navigation keeps vim aliases",
+			got:  cfg.GuildsTree.Up.Keys(),
+			want: []string{"up", "k"},
+		},
+		{
+			name: "messages list selection uses vim keys",
+			got:  cfg.MessagesList.SelectDown.Keys(),
+			want: []string{"j"},
+		},
+		{
+			name: "message scrolling uses arrow and vim aliases",
+			got:  cfg.MessagesList.ScrollUp.Keys(),
+			want: []string{"up", "K"},
+		},
+		{
+			name: "mentions list keeps ctrl+p alias",
+			got:  cfg.MentionsList.Up.Keys(),
+			want: []string{"up", "ctrl+p"},
+		},
+		{
+			name: "tab focuses next pane and keeps ctrl+l alias",
+			got:  cfg.FocusNext.Keys(),
+			want: []string{"tab", "ctrl+l"},
+		},
+		{
+			name: "shift tab focuses previous pane and keeps ctrl+h alias",
+			got:  cfg.FocusPrevious.Keys(),
+			want: []string{"shift+tab", "ctrl+h"},
+		},
+		{
+			name: "message autocomplete does not consume tab",
+			got:  cfg.MessageInput.TabComplete.Keys(),
+			want: []string{"ctrl+space"},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if diff := cmp.Diff(test.want, test.got); diff != "" {
+				t.Fatalf("got = -, want = +, diff=%s", diff)
+			}
+		})
+	}
+}

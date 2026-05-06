@@ -105,7 +105,8 @@ func newMessagesList(cfg *config.Config, chat *Model) *messagesList {
 	ml.SetScrollBar(tview.NewScrollBar().
 		SetTrackStyle(cfg.Theme.ScrollBar.TrackStyle.Style).
 		SetThumbStyle(cfg.Theme.ScrollBar.ThumbStyle.Style).
-		SetGlyphSet(cfg.Theme.ScrollBar.GlyphSet.GlyphSet))
+		SetGlyphSet(cfg.Theme.ScrollBar.GlyphSet.GlyphSet).
+		SetScrollStep(cfg.Theme.ScrollBar.ScrollStep))
 	return ml
 }
 
@@ -183,10 +184,12 @@ func (ml *messagesList) buildItem(index int, cursor int) list.Item {
 
 	message := ml.messages[row.messageIndex]
 	if index == cursor {
-		return tview.NewTextView().
+		item := tview.NewTextView().
 			SetWrap(true).
 			SetWordWrap(true).
 			SetLines(ml.renderMessage(message, ml.cfg.Theme.MessagesList.SelectedMessageStyle.Style))
+		item.SetBackgroundColor(ml.cfg.Theme.MessagesList.SelectedMessageStyle.GetBackground())
+		return item
 	}
 
 	item, ok := ml.itemByID[message.ID]
@@ -195,6 +198,7 @@ func (ml *messagesList) buildItem(index int, cursor int) list.Item {
 			SetWrap(true).
 			SetWordWrap(true).
 			SetLines(ml.renderMessage(message, ml.cfg.Theme.MessagesList.MessageStyle.Style))
+		item.SetBackgroundColor(ml.cfg.Theme.MessagesList.MessageStyle.GetBackground())
 		ml.itemByID[message.ID] = item
 	}
 	return item
@@ -209,11 +213,13 @@ func (ml *messagesList) renderMessage(message discord.Message, baseStyle tcell.S
 func (ml *messagesList) buildSeparatorItem(ts discord.Timestamp) *tview.TextView {
 	builder := tview.NewLineBuilder()
 	ml.drawDateSeparator(builder, ts, ml.cfg.Theme.MessagesList.MessageStyle.Style)
-	return tview.NewTextView().
+	item := tview.NewTextView().
 		SetScrollable(false).
 		SetWrap(false).
 		SetWordWrap(false).
 		SetLines(builder.Finish())
+	item.SetBackgroundColor(ml.cfg.Theme.MessagesList.MessageStyle.GetBackground())
+	return item
 }
 
 func (ml *messagesList) drawDateSeparator(builder *tview.LineBuilder, ts discord.Timestamp, baseStyle tcell.Style) {

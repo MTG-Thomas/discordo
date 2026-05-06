@@ -1,9 +1,10 @@
 SHELL := /bin/sh
 
 VERSION ?= dev
+DIST ?= mtg-fork
 COMMIT ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
 DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-LDFLAGS := -s -X github.com/ayn2op/discordo/internal/version.Version=$(VERSION) -X github.com/ayn2op/discordo/internal/version.Commit=$(COMMIT) -X github.com/ayn2op/discordo/internal/version.Date=$(DATE)
+LDFLAGS := -s -X github.com/ayn2op/discordo/internal/version.Version=$(VERSION) -X github.com/ayn2op/discordo/internal/version.Commit=$(COMMIT) -X github.com/ayn2op/discordo/internal/version.Date=$(DATE) -X github.com/ayn2op/discordo/internal/version.Distribution=$(DIST)
 
 .PHONY: fmt fmt-check test build lint vulncheck check
 
