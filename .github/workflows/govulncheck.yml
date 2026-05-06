@@ -1,0 +1,19 @@
+name: govulncheck
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install libx11-dev for clipboard support
+        run: sudo apt install libx11-dev
+
+      - id: govulncheck
+        uses: golang/govulncheck-action@v1
+        with:
+          go-version-file: go.mod
+          go-package: ./...

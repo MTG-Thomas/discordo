@@ -18,10 +18,11 @@ This repository is a fork of `ayn2op/discordo`. Keep changes small, upstream-fri
 Before claiming a Go change is complete, run:
 
 ```sh
-gofmt -w .
-go test ./...
-go build -trimpath -ldflags=-s .
+make check
 ```
+
+If `make` is not available, run the equivalent commands: `gofmt -l .`, `go test ./...`, and `go build -trimpath -ldflags=-s .`.
+On Windows, `pwsh ./scripts/check.ps1` runs the same local check set without requiring Make.
 
 For CI or docs-only changes, run the closest relevant check and explain anything that was not applicable.
 
