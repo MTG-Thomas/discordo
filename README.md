@@ -1,6 +1,18 @@
-# Discordo &middot; [![discord](https://img.shields.io/discord/1297292231299956788?color=5865F2&logo=discord&logoColor=white)](https://discord.com/invite/VzF9UFn2aB) [![ci](https://github.com/ayn2op/discordo/actions/workflows/ci.yml/badge.svg)](https://github.com/ayn2op/discordo/actions/workflows/ci.yml) [![Go Report Card](https://goreportcard.com/badge/github.com/ayn2op/discordo)](https://goreportcard.com/report/github.com/ayn2op/discordo) [![license](https://img.shields.io/github/license/ayn2op/discordo?logo=github)](https://github.com/ayn2op/discordo/blob/master/LICENSE)
+# Discordo MTG Fork &middot; [![ci](https://github.com/MTG-Thomas/discordo/actions/workflows/ci.yml/badge.svg)](https://github.com/MTG-Thomas/discordo/actions/workflows/ci.yml) [![license](https://img.shields.io/github/license/MTG-Thomas/discordo?logo=github)](https://github.com/MTG-Thomas/discordo/blob/main/LICENSE)
 
-Discordo is a lightweight, secure, and feature-rich Discord terminal client. Heavily work-in-progress, expect breaking changes.
+This is the Midtown Technology Group fork of [`ayn2op/discordo`](https://github.com/ayn2op/discordo), a lightweight Discord terminal client.
+
+The fork keeps the runtime executable name `discordo` so existing config, cache, and keyring paths continue to work. Fork builds identify themselves in `discordo -version` with `distribution=mtg-fork`, and release assets are named `discordo-mtg_*`.
+
+Fork-local changes focus on operator ergonomics:
+
+- nano-friendly key aliases and pane focus cycling with `Tab` / `Shift+Tab`
+- faster mouse wheel scrolling
+- a softer terminal theme
+- wrapped guild/channel tree navigation
+- MTG fork release metadata and branded binary artifacts
+
+For upstream project details, see [`ayn2op/discordo`](https://github.com/ayn2op/discordo). Heavily work-in-progress, expect breaking changes.
 
 ![Preview](.github/preview.png)
 
@@ -8,7 +20,9 @@ Discordo is a lightweight, secure, and feature-rich Discord terminal client. Hea
 
 ### Prebuilt binaries
 
-You can download and install a [prebuilt binary here](https://nightly.link/ayn2op/discordo/workflows/ci/main) for Windows, macOS, or Linux.
+MTG fork binaries are published on the [MTG-Thomas/discordo releases page](https://github.com/MTG-Thomas/discordo/releases). Each release includes matching source at the release tag, platform archives, checksums, and GitHub artifact attestations.
+
+Upstream prebuilt binaries are available from the upstream project.
 
 ### Package managers
 
@@ -27,9 +41,9 @@ scoop install discordo
 ### Building from source
 
 ```bash
-git clone https://github.com/ayn2op/discordo
+git clone https://github.com/MTG-Thomas/discordo
 cd discordo
-go build .
+go build -trimpath -ldflags="-s" .
 ```
 
 ### Wayland clipboard support
@@ -77,5 +91,7 @@ Discordo uses the default configuration if a configuration file is not found in 
 
 Copyright (C) 2025-present ayn2op
 
-This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+This fork and the upstream project are licensed under the GNU General Public License v3.0 (GPL-3.0).
 See the [LICENSE](./LICENSE) file for the full license text.
+
+When distributing MTG fork binaries, provide the matching source for the exact release tag. The release workflow publishes binaries from tags on `main` so the corresponding GPL source is available in this repository.
