@@ -23,7 +23,6 @@ import (
 	"github.com/diamondburned/arikawa/v3/utils/ws"
 	"github.com/diamondburned/ningen/v3"
 	"github.com/diamondburned/ningen/v3/states/read"
-	"github.com/gdamore/tcell/v3"
 )
 
 const typingDuration = 10 * time.Second
@@ -131,6 +130,7 @@ func (m *Model) buildLayout() {
 		SetDirection(flex.DirectionRow).
 		AddItem(m.messagesList, 0, 1, false).
 		AddItem(m.messageInput, 3, 1, false)
+	m.updateMessageInputHeight()
 	// The guilds tree is always focused first at start-up.
 	m.mainFlex.
 		AddItem(m.guildsTree, 0, 1, true).
@@ -144,6 +144,13 @@ func (m *Model) buildLayout() {
 		layers.WithVisible(false),
 		layers.WithEnabled(false),
 	)
+}
+
+func (m *Model) updateMessageInputHeight() {
+	if m == nil || m.rightFlex == nil || m.messageInput == nil {
+		return
+	}
+	m.rightFlex.ResizeItem(m.messageInput, m.messageInput.desiredHeight(), 0)
 }
 
 func (m *Model) togglePicker() {
@@ -332,7 +339,7 @@ func (m *Model) Update(msg tview.Msg) tview.Cmd {
 		} else if m.cfg.AutoFocus {
 			focusCmd = m.focusMessageInput()
 		}
-		m.messageInput.SetPlaceholder(tview.NewLine(tview.NewSegment(text, tcell.StyleDefault.Dim(true))))
+		m.messageInput.setPlaceholderText(text)
 		return focusCmd
 	case QuitMsg:
 		return m.closeState()
