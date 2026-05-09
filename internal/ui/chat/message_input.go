@@ -34,7 +34,12 @@ import (
 	"github.com/yuin/goldmark/ast"
 )
 
-const tmpFilePattern = consts.Name + "_*.md"
+const (
+	tmpFilePattern = consts.Name + "_*.md"
+
+	messageInputMinHeight = 3
+	messageInputMaxLines  = 10
+)
 
 var mentionRegex = regexp.MustCompile("@[a-zA-Z0-9._]+")
 
@@ -44,11 +49,12 @@ type messageInput struct {
 
 	cfg *config.Config
 
-	edit            bool
-	sendMessageData *api.SendMessageData
-	cache           *cache.Cache
-	mentionsList    *mentionsList
-	lastSearch      time.Time
+	edit             bool
+	sendMessageData  *api.SendMessageData
+	cache            *cache.Cache
+	mentionsList     *mentionsList
+	lastSearch       time.Time
+	placeholderStyle tcell.Style
 
 	typingTimerMu sync.Mutex
 	typingTimer   *time.Timer
@@ -72,11 +78,12 @@ func newMessageInput(cfg *config.Config, chat *Model) *messageInput {
 	if inputStyle.GetBackground() == tcell.ColorDefault {
 		inputStyle = inputStyle.Background(tcell.GetColor("#0f1117"))
 	}
+	mi.placeholderStyle = inputStyle.Dim(true)
 	mi.SetBackgroundColor(inputStyle.GetBackground())
 	mi.
 		SetTextStyle(inputStyle).
 		SetSelectedStyle(tcell.StyleDefault.Foreground(tcell.GetColor("#f2efe7")).Background(tcell.GetColor("#253044"))).
-		SetPlaceholder(tview.NewLine(tview.NewSegment("Select a channel to start chatting", tcell.StyleDefault.Dim(true)))).
+		SetPlaceholder(messageInputPlaceholderLine("Select a channel to start chatting", inputStyle)).
 		SetClipboard(
 			func(s string) {
 				if err := clipboard.Write(clipboard.FmtText, []byte(s)); err != nil {
@@ -92,9 +99,46 @@ func newMessageInput(cfg *config.Config, chat *Model) *messageInput {
 				return string(data)
 			},
 		).
+		SetChangedFunc(func() {
+			chat.updateMessageInputHeight()
+		}).
 		SetDisabled(true)
 
 	return mi
+}
+
+func messageInputPlaceholderLine(text string, inputStyle tcell.Style) tview.Line {
+	return tview.NewLine(tview.NewSegment(text, inputStyle.Dim(true)))
+}
+
+func (mi *messageInput) setPlaceholderText(text string) {
+	mi.SetPlaceholder(tview.NewLine(tview.NewSegment(text, mi.placeholderStyle)))
+}
+
+func messageInputHeightForText(text string, width int, chrome int) int {
+	if width <= 0 {
+		return messageInputMinHeight
+	}
+
+	lineCount := 0
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	for _, line := range strings.Split(text, "\n") {
+		if line == "" {
+			lineCount++
+			continue
+		}
+		wrapped := tview.WordWrap(line, width)
+		lineCount += max(len(wrapped), 1)
+	}
+	lineCount = min(max(lineCount, 1), messageInputMaxLines)
+
+	return max(messageInputMinHeight, lineCount+max(chrome, 0))
+}
+
+func (mi *messageInput) desiredHeight() int {
+	_, _, _, height := mi.Rect()
+	_, _, width, innerHeight := mi.InnerRect()
+	return messageInputHeightForText(mi.GetText(), width, height-innerHeight)
 }
 
 func (mi *messageInput) reset() {
