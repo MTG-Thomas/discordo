@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
 )
 
 func TestMessageInputHeightForText(t *testing.T) {
@@ -60,17 +61,17 @@ func TestMessageInputHeightForText(t *testing.T) {
 }
 
 func TestMessageInputPlaceholderLineUsesInputStyle(t *testing.T) {
-	style := tcell.StyleDefault.Foreground(tcell.ColorRed).Background(tcell.ColorBlue)
+	style := tcell.StyleDefault.Foreground(color.Red).Background(color.Blue)
 	line := messageInputPlaceholderLine("Message...", style)
 	if len(line) != 1 {
 		t.Fatalf("placeholder line has %d segments, want 1", len(line))
 	}
 
-	if got := line[0].Style.GetForeground(); got != tcell.ColorRed {
-		t.Fatalf("placeholder foreground = %v, want %v", got, tcell.ColorRed)
+	if got := line[0].Style.GetForeground(); got != color.Red {
+		t.Fatalf("placeholder foreground = %v, want %v", got, color.Red)
 	}
-	if got := line[0].Style.GetBackground(); got != tcell.ColorBlue {
-		t.Fatalf("placeholder background = %v, want %v", got, tcell.ColorBlue)
+	if got := line[0].Style.GetBackground(); got != color.Blue {
+		t.Fatalf("placeholder background = %v, want %v", got, color.Blue)
 	}
 	if !line[0].Style.HasDim() {
 		t.Fatal("placeholder style is not dimmed")
