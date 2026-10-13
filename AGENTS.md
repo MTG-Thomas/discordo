@@ -21,8 +21,8 @@ Before claiming a Go change is complete, run:
 make check
 ```
 
-If `make` is not available, run the equivalent commands: `gofmt -l .`, `go test ./...`, and `go build -trimpath -ldflags=-s .`.
-On Windows, `pwsh ./scripts/check.ps1` runs the same local check set without requiring Make.
+`make check` requires a failing format check, `go test ./...`, a linker-metadata build, and the smoke target. Smoke verifies version/distribution metadata and config loading.
+On Windows, use the existing `pwsh ./scripts/check.ps1` fallback: it throws on gofmt output, runs `go test ./...` and `go build -trimpath -ldflags=-s .`, then invokes `scripts/smoke.ps1` for metadata/config checks. Inspect each native command exit status as well as the wrapper status; the script does not explicitly promote every native nonzero exit into a PowerShell exception. Do not substitute the previous three-command list, which omits smoke and does not fail on formatting output.
 
 For CI or docs-only changes, run the closest relevant check and explain anything that was not applicable.
 
